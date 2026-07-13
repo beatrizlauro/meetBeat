@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="purple_primary">#8B7FD6</color>
+    <color name="purple_light">#F3F1FB</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="reject_pink">#F7C6C7</color>
+    <color name="accept_green">#B8E6B8</color>
+    <color name="text_dark">#2D2D2D</color>
+    <color name="text_gray">#8A8A8A</color>
+</resources>
