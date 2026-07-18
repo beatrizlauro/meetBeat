@@ -13,6 +13,7 @@ public class UserNode {
 
     private String nome;
     private String bio;
+    private String fotoShow;
 
     @Relationship(type = "GOSTA_DE", direction = Relationship.Direction.OUTGOING)
     private Set<MusicInterest> generos = new HashSet<>();
@@ -55,5 +56,13 @@ public class UserNode {
 
     public void adicionarGenero(MusicInterest genero) {
         this.generos.add(genero);
+    }
+
+    public String getFotoShow() {
+        return fotoShow;
+    }
+
+    public void setFotoShow(String fotoShow) {
+        this.fotoShow = fotoShow;
     }
 }

@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-MatchingApplication<matching>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.meetbeat.matching.MatchingApplication",
+            "projectName": "matching",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

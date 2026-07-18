@@ -1,8 +1,11 @@
 package com.meetbeat.app.adapter;
 
+import android.content.Context;
+import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -10,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.meetbeat.app.R;
 import com.meetbeat.app.model.MatchSuggestion;
+import com.meetbeat.app.util.VisualHelper;
 
 import java.util.List;
 
@@ -41,7 +45,26 @@ public class MatchAdapter extends RecyclerView.Adapter<MatchAdapter.MatchViewHol
         MatchSuggestion pessoa = lista.get(position);
 
         holder.textNome.setText(pessoa.getNome());
-        holder.textScore.setText(pessoa.getScore() + " gênero(s) em comum");
+
+        String generos = String.join(", ", pessoa.getGenerosComuns());
+        holder.textScore.setText(generos);
+
+        holder.textAvatarInicial.setText(VisualHelper.getInicial(pessoa.getNome()));
+        GradientDrawable bgAvatar = (GradientDrawable) holder.textAvatarInicial.getBackground();
+        bgAvatar.setColor(VisualHelper.getCorAvatar(pessoa.getNome()));
+
+        // Carrega a foto real do show pelo nome do arquivo salvo no banco
+        Context context = holder.itemView.getContext();
+        String nomeArquivo = pessoa.getFotoShow();
+
+        if (nomeArquivo != null && !nomeArquivo.isEmpty()) {
+            int resId = context.getResources().getIdentifier(nomeArquivo, "drawable", context.getPackageName());
+            if (resId != 0) {
+                holder.imageCardBackground.setImageResource(resId);
+            } else {
+                holder.imageCardBackground.setImageResource(R.drawable.ic_launcher_background); // fallback
+            }
+        }
 
         holder.btnCurtir.setOnClickListener(v -> listener.onCurtir(pessoa));
         holder.btnRejeitar.setOnClickListener(v -> listener.onRejeitar(pessoa));
@@ -53,7 +76,8 @@ public class MatchAdapter extends RecyclerView.Adapter<MatchAdapter.MatchViewHol
     }
 
     static class MatchViewHolder extends RecyclerView.ViewHolder {
-        TextView textNome, textScore, btnCurtir, btnRejeitar;
+        TextView textNome, textScore, btnCurtir, btnRejeitar, textAvatarInicial;
+        ImageView imageCardBackground;
 
         MatchViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -61,6 +85,8 @@ public class MatchAdapter extends RecyclerView.Adapter<MatchAdapter.MatchViewHol
             textScore = itemView.findViewById(R.id.textScore);
             btnCurtir = itemView.findViewById(R.id.btnCurtir);
             btnRejeitar = itemView.findViewById(R.id.btnRejeitar);
+            textAvatarInicial = itemView.findViewById(R.id.textAvatarInicial);
+            imageCardBackground = itemView.findViewById(R.id.imageCardBackground);
         }
     }
 }

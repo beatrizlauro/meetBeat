@@ -13,7 +13,7 @@
         android:orientation="vertical"
         android:background="@color/card_background">
 
-        <!-- Cabeçalho: nome do usuário -->
+        <!-- Cabeçalho: avatar com inicial + nome do usuário -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -21,12 +21,16 @@
             android:padding="16dp"
             android:gravity="center_vertical">
 
-            <ImageView
+            <TextView
+                android:id="@+id/textAvatarInicial"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
-                android:background="@color/purple_light"
-                android:src="@android:drawable/ic_menu_camera"
-                android:padding="8dp" />
+                android:gravity="center"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:background="@drawable/bg_avatar_circle"
+                android:text="?" />
 
             <TextView
                 android:id="@+id/textNome"
@@ -41,13 +45,13 @@
 
         </LinearLayout>
 
-        <!-- Imagem principal (placeholder) -->
+        <!-- Imagem principal: foto real do show -->
         <ImageView
+            android:id="@+id/imageCardBackground"
             android:layout_width="match_parent"
             android:layout_height="280dp"
             android:background="@color/purple_light"
-            android:scaleType="centerCrop"
-            android:src="@android:drawable/ic_menu_gallery" />
+            android:scaleType="centerCrop" />
 
         <!-- Compatibilidade musical -->
         <LinearLayout
@@ -67,7 +71,7 @@
                 android:id="@+id/textScore"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="X gêneros em comum"
+                android:text="Gêneros em comum"
                 android:textColor="@color/purple_primary"
                 android:textSize="18sp"
                 android:textStyle="bold"

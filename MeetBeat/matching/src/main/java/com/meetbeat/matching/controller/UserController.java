@@ -34,7 +34,9 @@ public class UserController {
         String cypher = """
             MATCH (me:Pessoa)-[:GOSTA_DE]->(g:Genero)<-[:GOSTA_DE]-(other:Pessoa)
             WHERE id(me) = $userId AND me <> other
-            RETURN id(other) AS userId, other.nome AS userNome, count(g) AS matchScore
+            WITH other, collect(g.nome) AS generosComuns
+            RETURN id(other) AS userId, other.nome AS userNome, other.fotoShow AS userFoto,
+                generosComuns, size(generosComuns) AS matchScore
             ORDER BY matchScore DESC
             """;
 
@@ -44,7 +46,9 @@ public class UserController {
                 .mappedBy((typeSystem, record) -> new MatchSuggestionDTO(
                         record.get("userId").asLong(),
                         record.get("userNome").asString(),
-                        record.get("matchScore").asLong()
+                        record.get("matchScore").asLong(),
+                        record.get("generosComuns").asList(value -> value.asString()),
+                        record.get("userFoto").asString("")
                 ))
                 .all();
 
