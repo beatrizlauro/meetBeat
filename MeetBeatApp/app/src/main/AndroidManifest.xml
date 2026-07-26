@@ -25,6 +25,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".MatchesActivity"
+            android:exported="false"
+            android:label="Meus Matches"
+            android:theme="@style/Theme.MeetBeat" />
+
+        <activity
+            android:name=".MatchDetalheActivity"
+            android:exported="false"
+            android:label="Detalhes do Match"
+            android:theme="@style/Theme.MeetBeat" />
+
     </application>
 
 </manifest>

@@ -56,6 +56,10 @@ public class MainActivity extends AppCompatActivity {
 
         recyclerView.setAdapter(adapter);
 
+        findViewById(R.id.btnVerMatches).setOnClickListener(v -> {
+            startActivity(new android.content.Intent(MainActivity.this, MatchesActivity.class));
+        });
+
         carregarSugestoes();
     }
 

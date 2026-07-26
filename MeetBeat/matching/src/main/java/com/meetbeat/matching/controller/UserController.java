@@ -1,5 +1,6 @@
 package com.meetbeat.matching.controller;
 
+import com.meetbeat.matching.dto.MatchConfirmadoDTO;
 import com.meetbeat.matching.dto.MatchSuggestionDTO;
 import com.meetbeat.matching.dto.SwipeResponseDTO;
 import com.meetbeat.matching.model.UserNode;
@@ -36,7 +37,7 @@ public class UserController {
             WHERE id(me) = $userId AND me <> other
             WITH other, collect(g.nome) AS generosComuns
             RETURN id(other) AS userId, other.nome AS userNome, other.fotoShow AS userFoto,
-                generosComuns, size(generosComuns) AS matchScore
+                   generosComuns, size(generosComuns) AS matchScore
             ORDER BY matchScore DESC
             """;
 
@@ -58,7 +59,6 @@ public class UserController {
     @PostMapping("/{id}/curtir/{targetId}")
     public SwipeResponseDTO curtir(@PathVariable Long id, @PathVariable Long targetId) {
 
-        // 1. Registra a curtida de "id" para "targetId"
         String criarCurtida = """
             MATCH (me:Pessoa), (other:Pessoa)
             WHERE id(me) = $meId AND id(other) = $otherId
@@ -70,7 +70,6 @@ public class UserController {
                 .bind(targetId).to("otherId")
                 .run();
 
-        // 2. Verifica se já existe curtida no sentido inverso (match mútuo)
         String verificarMatch = """
             MATCH (me:Pessoa)-[:CURTIU]->(other:Pessoa)-[:CURTIU]->(me)
             WHERE id(me) = $meId AND id(other) = $otherId
@@ -90,5 +89,30 @@ public class UserController {
         } else {
             return new SwipeResponseDTO(false, "Curtida registrada. Aguardando o outro usuário.");
         }
+    }
+
+    @GetMapping("/{id}/matches")
+    public List<MatchConfirmadoDTO> meusMatches(@PathVariable Long id) {
+
+        String cypher = """
+            MATCH (me:Pessoa)-[:CURTIU]->(other:Pessoa)-[:CURTIU]->(me)
+            WHERE id(me) = $userId
+            OPTIONAL MATCH (me)-[:GOSTA_DE]->(g:Genero)<-[:GOSTA_DE]-(other)
+            WITH DISTINCT other, collect(DISTINCT g.nome) AS generosComuns
+            RETURN id(other) AS userId, other.nome AS userNome, other.fotoShow AS userFoto, generosComuns
+            """;
+
+        Collection<MatchConfirmadoDTO> resultados = neo4jClient.query(cypher)
+                .bind(id).to("userId")
+                .fetchAs(MatchConfirmadoDTO.class)
+                .mappedBy((typeSystem, record) -> new MatchConfirmadoDTO(
+                        record.get("userId").asLong(),
+                        record.get("userNome").asString(),
+                        record.get("userFoto").asString(""),
+                        record.get("generosComuns").asList(value -> value.asString())
+                ))
+                .all();
+
+        return new ArrayList<>(resultados);
     }
 }
