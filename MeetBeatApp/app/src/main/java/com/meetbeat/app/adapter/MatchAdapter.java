@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.meetbeat.app.R;
 import com.meetbeat.app.model.MatchSuggestion;
 import com.meetbeat.app.util.VisualHelper;
+import com.meetbeat.app.util.ImageLoader;
 
 import java.util.List;
 
@@ -55,16 +56,7 @@ public class MatchAdapter extends RecyclerView.Adapter<MatchAdapter.MatchViewHol
 
         // Carrega a foto real do show pelo nome do arquivo salvo no banco
         Context context = holder.itemView.getContext();
-        String nomeArquivo = pessoa.getFotoShow();
-
-        if (nomeArquivo != null && !nomeArquivo.isEmpty()) {
-            int resId = context.getResources().getIdentifier(nomeArquivo, "drawable", context.getPackageName());
-            if (resId != 0) {
-                holder.imageCardBackground.setImageResource(resId);
-            } else {
-                holder.imageCardBackground.setImageResource(R.drawable.ic_launcher_background); // fallback
-            }
-        }
+        ImageLoader.carregar(context, pessoa.getFotoShow(), holder.imageCardBackground);
 
         holder.btnCurtir.setOnClickListener(v -> listener.onCurtir(pessoa));
         holder.btnRejeitar.setOnClickListener(v -> listener.onRejeitar(pessoa));

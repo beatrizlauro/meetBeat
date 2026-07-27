@@ -11,6 +11,7 @@ import com.meetbeat.app.adapter.MatchConfirmadoAdapter;
 import com.meetbeat.app.model.MatchConfirmado;
 import com.meetbeat.app.network.ApiService;
 import com.meetbeat.app.network.RetrofitClient;
+import com.meetbeat.app.util.UserSession;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,13 +22,12 @@ import retrofit2.Response;
 
 public class MatchesActivity extends AppCompatActivity {
 
-    private static final long MEU_ID = 12; // Jungkook
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_matches);
-        findViewById(R.id.btnVoltar).setOnClickListener(v -> finish());
+
+        long meuId = UserSession.getUsuarioLogado(this);
 
         RecyclerView recyclerView = findViewById(R.id.recyclerMatches);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -36,8 +36,10 @@ public class MatchesActivity extends AppCompatActivity {
         MatchConfirmadoAdapter adapter = new MatchConfirmadoAdapter(matches);
         recyclerView.setAdapter(adapter);
 
+        findViewById(R.id.btnVoltar).setOnClickListener(v -> finish());
+
         ApiService apiService = RetrofitClient.getApiService();
-        apiService.getMatches(MEU_ID).enqueue(new Callback<List<MatchConfirmado>>() {
+        apiService.getMatches(meuId).enqueue(new Callback<List<MatchConfirmado>>() {
             @Override
             public void onResponse(Call<List<MatchConfirmado>> call, Response<List<MatchConfirmado>> response) {
                 if (response.isSuccessful() && response.body() != null) {

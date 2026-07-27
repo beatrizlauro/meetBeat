@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.meetbeat.app.MatchDetalheActivity;
 import com.meetbeat.app.R;
 import com.meetbeat.app.model.MatchConfirmado;
+import com.meetbeat.app.util.ImageLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,18 +44,9 @@ public class MatchConfirmadoAdapter extends RecyclerView.Adapter<MatchConfirmado
         holder.textNome.setText(pessoa.getNome());
 
         Context context = holder.itemView.getContext();
-        String nomeArquivo = pessoa.getFotoShow();
 
-        if (nomeArquivo != null && !nomeArquivo.isEmpty()) {
-            int resId = context.getResources().getIdentifier(nomeArquivo, "drawable", context.getPackageName());
-            if (resId != 0) {
-                holder.imageFoto.setImageResource(resId);
-            } else {
-                holder.imageFoto.setImageResource(R.drawable.ic_launcher_background);
-            }
-        } else {
-            holder.imageFoto.setImageResource(R.drawable.ic_launcher_background);
-        }
+        // Carrega a foto (local ou via URL do servidor, dependendo do formato salvo)
+        ImageLoader.carregar(context, pessoa.getFotoShow(), holder.imageFoto);
 
         // Clique no card inteiro: abre a tela de detalhe do match
         holder.itemView.setOnClickListener(v -> {

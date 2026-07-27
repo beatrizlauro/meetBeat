@@ -29,6 +29,32 @@
         android:clickable="true"
         android:focusable="true" />
 
+    <TextView
+        android:id="@+id/btnCriarPerfil"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="+ Criar meu perfil"
+        android:textColor="@color/purple_primary"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:padding="8dp"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <TextView
+        android:id="@+id/btnTrocarUsuario"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🔄 Trocar usuário"
+        android:textColor="@color/purple_primary"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:padding="8dp"
+        android:clickable="true"
+        android:focusable="true" />
+
     <!-- Lista de sugestões -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerSugestoes"

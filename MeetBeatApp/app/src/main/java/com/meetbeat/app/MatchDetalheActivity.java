@@ -1,11 +1,12 @@
 package com.meetbeat.app;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.meetbeat.app.util.ImageLoader;
 
 import java.util.ArrayList;
 
@@ -34,12 +35,8 @@ public class MatchDetalheActivity extends AppCompatActivity {
             textGeneros.setText(String.join(", ", generos));
         }
 
-        if (foto != null && !foto.isEmpty()) {
-            int resId = getResources().getIdentifier(foto, "drawable", getPackageName());
-            if (resId != 0) {
-                imageFoto.setImageResource(resId);
-            }
-        }
+        // Carrega a foto (local ou via URL do servidor, dependendo do formato salvo)
+        ImageLoader.carregar(this, foto, imageFoto);
 
         findViewById(R.id.btnVoltarDetalhe).setOnClickListener(v -> finish());
     }
