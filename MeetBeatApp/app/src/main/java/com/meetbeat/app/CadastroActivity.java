@@ -1,5 +1,7 @@
 package com.meetbeat.app;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.CheckBox;
@@ -7,8 +9,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -204,14 +204,12 @@ public class CadastroActivity extends AppCompatActivity {
     }
 
     private Bitmap carregarBitmapReduzido(Uri uri, int tamanhoMaximo) throws Exception {
-        // 1ª passada: só lê as dimensões da imagem, sem carregar ela inteira na memória
         InputStream inputStreamMedidas = getContentResolver().openInputStream(uri);
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeStream(inputStreamMedidas, null, options);
         inputStreamMedidas.close();
 
-        // Calcula o fator de redução necessário
         int larguraOriginal = options.outWidth;
         int alturaOriginal = options.outHeight;
         int inSampleSize = 1;
@@ -220,7 +218,6 @@ public class CadastroActivity extends AppCompatActivity {
             inSampleSize *= 2;
         }
 
-        // 2ª passada: agora sim decodifica a imagem, já reduzida
         BitmapFactory.Options optionsFinal = new BitmapFactory.Options();
         optionsFinal.inSampleSize = inSampleSize;
 

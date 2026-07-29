@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:background="@color/card_background"
         android:padding="14dp"
-        android:hint="Nome de usuário" />
+        android:hint="Nome de usuário (ex: jimin)" />
 
     <EditText
         android:id="@+id/editSenhaLogin"

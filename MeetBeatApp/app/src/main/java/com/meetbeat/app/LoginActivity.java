@@ -39,15 +39,15 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void fazerLogin() {
-        String nome = editNome.getText().toString().trim();
+        String username = editNome.getText().toString().trim();
         String senha = editSenha.getText().toString().trim();
 
-        if (nome.isEmpty() || senha.isEmpty()) {
-            Toast.makeText(this, "Preencha nome e senha", Toast.LENGTH_SHORT).show();
+        if (username.isEmpty() || senha.isEmpty()) {
+            Toast.makeText(this, "Preencha usuário e senha", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        apiService.login(new LoginRequest(nome, senha)).enqueue(new Callback<LoginResponse>() {
+        apiService.login(new LoginRequest(username, senha)).enqueue(new Callback<LoginResponse>() {
             @Override
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
