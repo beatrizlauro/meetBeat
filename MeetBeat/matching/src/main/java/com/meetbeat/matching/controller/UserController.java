@@ -1,6 +1,8 @@
 package com.meetbeat.matching.controller;
 
 import com.meetbeat.matching.dto.GeneroDTO;
+import com.meetbeat.matching.dto.LoginRequestDTO;
+import com.meetbeat.matching.dto.LoginResponseDTO;
 import com.meetbeat.matching.dto.MatchConfirmadoDTO;
 import com.meetbeat.matching.dto.MatchSuggestionDTO;
 import com.meetbeat.matching.dto.NovoUsuarioDTO;
@@ -8,16 +10,19 @@ import com.meetbeat.matching.dto.SwipeResponseDTO;
 import com.meetbeat.matching.model.UserNode;
 import com.meetbeat.matching.repository.UserRepository;
 import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.nio.file.Path;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -25,15 +30,77 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final Neo4jClient neo4jClient;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserController(UserRepository userRepository, Neo4jClient neo4jClient) {
+    public UserController(UserRepository userRepository, Neo4jClient neo4jClient, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.neo4jClient = neo4jClient;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping
     public List<UserNode> listarTodos() {
         return userRepository.findAll();
+    }
+
+    @PostMapping
+    public ResponseEntity<?> criarUsuario(@RequestBody NovoUsuarioDTO dto) {
+
+        String verificarUsername = """
+            MATCH (p:Pessoa {username: $username})
+            RETURN count(p) AS total
+            """;
+
+        Long existente = neo4jClient.query(verificarUsername)
+                .bind(dto.getUsername()).to("username")
+                .fetchAs(Long.class)
+                .mappedBy((typeSystem, record) -> record.get("total").asLong())
+                .one()
+                .orElse(0L);
+
+        if (existente > 0) {
+            return ResponseEntity.status(409).body("Nome de usuário já está em uso");
+        }
+
+        UserNode novoUsuario = new UserNode(dto.getNome(), dto.getBio());
+        novoUsuario.setUsername(dto.getUsername());
+        novoUsuario.setSenhaHash(passwordEncoder.encode(dto.getSenha()));
+
+        return ResponseEntity.ok(userRepository.save(novoUsuario));
+    }
+
+    @PostMapping("/login")
+    public LoginResponseDTO login(@RequestBody LoginRequestDTO dto) {
+
+        String cypher = """
+            MATCH (p:Pessoa {username: $username})
+            RETURN id(p) AS userId, p.nome AS userNome, p.senhaHash AS senhaHash
+            """;
+
+        Optional<Object[]> resultado = neo4jClient.query(cypher)
+                .bind(dto.getUsername()).to("username")
+                .fetchAs(Object[].class)
+                .mappedBy((typeSystem, record) -> new Object[]{
+                        record.get("userId").asLong(),
+                        record.get("userNome").asString(),
+                        record.get("senhaHash").asString(null)
+                })
+                .one();
+
+        if (resultado.isEmpty()) {
+            return new LoginResponseDTO(false, "Usuário não encontrado", null, null);
+        }
+
+        Object[] dados = resultado.get();
+        Long userId = (Long) dados[0];
+        String userNome = (String) dados[1];
+        String senhaHash = (String) dados[2];
+
+        if (senhaHash == null || !passwordEncoder.matches(dto.getSenha(), senhaHash)) {
+            return new LoginResponseDTO(false, "Senha incorreta", null, null);
+        }
+
+        return new LoginResponseDTO(true, "Login realizado com sucesso", userId, userNome);
     }
 
     @GetMapping("/{id}/sugestoes")
@@ -123,6 +190,41 @@ public class UserController {
         return new ArrayList<>(resultados);
     }
 
+    @GetMapping("/generos")
+    public List<GeneroDTO> listarGeneros() {
+
+        String cypher = """
+            MATCH (g:Genero)
+            RETURN id(g) AS generoId, g.nome AS generoNome
+            ORDER BY g.nome
+            """;
+
+        Collection<GeneroDTO> resultados = neo4jClient.query(cypher)
+                .fetchAs(GeneroDTO.class)
+                .mappedBy((typeSystem, record) -> new GeneroDTO(
+                        record.get("generoId").asLong(),
+                        record.get("generoNome").asString()
+                ))
+                .all();
+
+        return new ArrayList<>(resultados);
+    }
+
+    @PostMapping("/{id}/interesses/{generoId}")
+    public void adicionarInteresse(@PathVariable Long id, @PathVariable Long generoId) {
+
+        String cypher = """
+            MATCH (p:Pessoa), (g:Genero)
+            WHERE id(p) = $userId AND id(g) = $generoId
+            MERGE (p)-[:GOSTA_DE]->(g)
+            """;
+
+        neo4jClient.query(cypher)
+                .bind(id).to("userId")
+                .bind(generoId).to("generoId")
+                .run();
+    }
+
     @PostMapping("/{id}/foto")
     public String uploadFoto(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
 
@@ -146,46 +248,5 @@ public class UserController {
                 .run();
 
         return urlPublica;
-    }
-
-    @PostMapping
-public UserNode criarUsuario(@RequestBody NovoUsuarioDTO dto) {
-    UserNode novoUsuario = new UserNode(dto.getNome(), dto.getBio());
-    return userRepository.save(novoUsuario);
-}
-
-@GetMapping("/generos")
-public List<GeneroDTO> listarGeneros() {
-
-    String cypher = """
-        MATCH (g:Genero)
-        RETURN id(g) AS generoId, g.nome AS generoNome
-        ORDER BY g.nome
-        """;
-
-    Collection<GeneroDTO> resultados = neo4jClient.query(cypher)
-            .fetchAs(GeneroDTO.class)
-            .mappedBy((typeSystem, record) -> new GeneroDTO(
-                    record.get("generoId").asLong(),
-                    record.get("generoNome").asString()
-            ))
-            .all();
-
-    return new ArrayList<>(resultados);
-}
-
-@PostMapping("/{id}/interesses/{generoId}")
-    public void adicionarInteresse(@PathVariable Long id, @PathVariable Long generoId) {
-
-        String cypher = """
-            MATCH (p:Pessoa), (g:Genero)
-            WHERE id(p) = $userId AND id(g) = $generoId
-            MERGE (p)-[:GOSTA_DE]->(g)
-            """;
-
-        neo4jClient.query(cypher)
-                .bind(id).to("userId")
-                .bind(generoId).to("generoId")
-                .run();
     }
 }

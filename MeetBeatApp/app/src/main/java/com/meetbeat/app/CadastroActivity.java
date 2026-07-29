@@ -6,8 +6,9 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -36,7 +37,7 @@ public class CadastroActivity extends AppCompatActivity {
 
     private ApiService apiService;
     private ImageView imageFotoSelecionada;
-    private EditText editNome, editBio;
+    private EditText editNome, editUsername, editBio, editSenha;
     private LinearLayout containerGeneros;
 
     private Uri fotoUriSelecionada;
@@ -59,7 +60,9 @@ public class CadastroActivity extends AppCompatActivity {
 
         imageFotoSelecionada = findViewById(R.id.imageFotoSelecionada);
         editNome = findViewById(R.id.editNome);
+        editUsername = findViewById(R.id.editUsername);
         editBio = findViewById(R.id.editBio);
+        editSenha = findViewById(R.id.editSenhaCadastro);
         containerGeneros = findViewById(R.id.containerGeneros);
 
         findViewById(R.id.btnVoltarCadastro).setOnClickListener(v -> finish());
@@ -96,14 +99,26 @@ public class CadastroActivity extends AppCompatActivity {
 
     private void salvarCadastro() {
         String nome = editNome.getText().toString().trim();
+        String username = editUsername.getText().toString().trim();
         String bio = editBio.getText().toString().trim();
+        String senha = editSenha.getText().toString().trim();
 
         if (nome.isEmpty()) {
             Toast.makeText(this, "Digite um nome", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        NovoUsuario novoUsuario = new NovoUsuario(nome, bio);
+        if (username.isEmpty()) {
+            Toast.makeText(this, "Digite um nome de usuário", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (senha.isEmpty() || senha.length() < 4) {
+            Toast.makeText(this, "A senha deve ter pelo menos 4 caracteres", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        NovoUsuario novoUsuario = new NovoUsuario(nome, username, bio, senha);
 
         apiService.criarUsuario(novoUsuario).enqueue(new Callback<MatchSuggestion>() {
             @Override
@@ -111,6 +126,8 @@ public class CadastroActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     long novoId = response.body().getId();
                     associarGenerosSelecionados(novoId);
+                } else if (response.code() == 409) {
+                    Toast.makeText(CadastroActivity.this, "Esse nome de usuário já está em uso", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(CadastroActivity.this, "Erro ao criar usuário", Toast.LENGTH_SHORT).show();
                 }
@@ -150,17 +167,19 @@ public class CadastroActivity extends AppCompatActivity {
 
     private void enviarFoto(long usuarioId) {
         try {
-            InputStream inputStream = getContentResolver().openInputStream(fotoUriSelecionada);
+            Bitmap bitmapRedimensionado = carregarBitmapReduzido(fotoUriSelecionada, 1080);
+
+            if (bitmapRedimensionado == null) {
+                Toast.makeText(this, "Erro ao processar a foto", Toast.LENGTH_SHORT).show();
+                finalizarCadastro();
+                return;
+            }
+
             File arquivoTemp = File.createTempFile("upload_", ".jpg", getCacheDir());
             FileOutputStream outputStream = new FileOutputStream(arquivoTemp);
-
-            byte[] buffer = new byte[4096];
-            int bytesLidos;
-            while ((bytesLidos = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesLidos);
-            }
+            bitmapRedimensionado.compress(Bitmap.CompressFormat.JPEG, 80, outputStream);
             outputStream.close();
-            inputStream.close();
+            bitmapRedimensionado.recycle();
 
             RequestBody requestFile = RequestBody.create(arquivoTemp, MediaType.parse("image/jpeg"));
             MultipartBody.Part body = MultipartBody.Part.createFormData("file", arquivoTemp.getName(), requestFile);
@@ -184,8 +203,38 @@ public class CadastroActivity extends AppCompatActivity {
         }
     }
 
+    private Bitmap carregarBitmapReduzido(Uri uri, int tamanhoMaximo) throws Exception {
+        // 1ª passada: só lê as dimensões da imagem, sem carregar ela inteira na memória
+        InputStream inputStreamMedidas = getContentResolver().openInputStream(uri);
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(inputStreamMedidas, null, options);
+        inputStreamMedidas.close();
+
+        // Calcula o fator de redução necessário
+        int larguraOriginal = options.outWidth;
+        int alturaOriginal = options.outHeight;
+        int inSampleSize = 1;
+
+        while ((larguraOriginal / inSampleSize) > tamanhoMaximo || (alturaOriginal / inSampleSize) > tamanhoMaximo) {
+            inSampleSize *= 2;
+        }
+
+        // 2ª passada: agora sim decodifica a imagem, já reduzida
+        BitmapFactory.Options optionsFinal = new BitmapFactory.Options();
+        optionsFinal.inSampleSize = inSampleSize;
+
+        InputStream inputStreamFinal = getContentResolver().openInputStream(uri);
+        Bitmap bitmap = BitmapFactory.decodeStream(inputStreamFinal, null, optionsFinal);
+        inputStreamFinal.close();
+
+        return bitmap;
+    }
+
     private void finalizarCadastro() {
-        Toast.makeText(this, "Perfil criado com sucesso! 🎉", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Perfil criado com sucesso! Faça login para continuar 🎉", Toast.LENGTH_LONG).show();
+
+        startActivity(new android.content.Intent(this, LoginActivity.class));
         finish();
     }
 }

@@ -92,6 +92,25 @@
             android:layout_marginTop="4dp"
             android:hint="Seu nome" />
 
+        <!-- Username -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Nome de usuário"
+            android:textColor="@color/text_gray"
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/editUsername"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/card_background"
+            android:padding="12dp"
+            android:layout_marginTop="4dp"
+            android:hint="Escolha um nome de usuário único"
+            android:inputType="text" />
+
         <!-- Bio -->
         <TextView
             android:layout_width="wrap_content"
@@ -110,6 +129,25 @@
             android:layout_marginTop="4dp"
             android:hint="Conte um pouco sobre você"
             android:minLines="2" />
+
+        <!-- Senha -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Senha"
+            android:textColor="@color/text_gray"
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/editSenhaCadastro"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/card_background"
+            android:padding="12dp"
+            android:layout_marginTop="4dp"
+            android:hint="Crie uma senha"
+            android:inputType="textPassword" />
 
         <!-- Gêneros -->
         <TextView

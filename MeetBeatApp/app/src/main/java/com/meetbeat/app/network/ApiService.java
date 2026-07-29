@@ -6,6 +6,8 @@ import com.meetbeat.app.model.MatchConfirmado;
 import com.meetbeat.app.model.Genero;
 import com.meetbeat.app.model.NovoUsuario;
 import com.meetbeat.app.model.UsuarioSimples;
+import com.meetbeat.app.model.LoginRequest;
+import com.meetbeat.app.model.LoginResponse;
 
 import java.util.List;
 
@@ -44,4 +46,7 @@ public interface ApiService {
 
     @GET("usuarios")
     Call<List<UsuarioSimples>> listarUsuarios();
+
+    @POST("usuarios/login")
+    Call<LoginResponse> login(@Body LoginRequest loginRequest);
 }
