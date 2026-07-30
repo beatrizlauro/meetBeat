@@ -13,7 +13,7 @@
         android:text="MEET&amp;BEAT"
         android:textColor="@color/purple_primary"
         android:textSize="32sp"
-        android:textStyle="bold"
+        android:fontFamily="@font/antonio_bold"
         android:layout_marginBottom="40dp" />
 
     <EditText

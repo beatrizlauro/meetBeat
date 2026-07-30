@@ -1,65 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@color/purple_light">
 
-    <!-- Cabeçalho -->
-    <TextView
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_above="@id/bottomNavContainer">
+
+        <!-- Cabeçalho -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="MEET&amp;BEAT"
+            android:textColor="@color/purple_primary"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:padding="20dp" />
+
+        <TextView
+            android:id="@+id/btnVerMatches"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ver meus matches"
+            android:textColor="@color/purple_primary"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/btnCriarPerfil"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+ Criar meu perfil"
+            android:textColor="@color/purple_primary"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/btnTrocarUsuario"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🚪 Sair"
+            android:textColor="@color/purple_primary"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <!-- Lista de sugestões -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerSugestoes"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+    <include
+        android:id="@+id/bottomNavContainer"
+        layout="@layout/bottom_nav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="MEET&amp;BEAT"
-        android:textColor="@color/purple_primary"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:padding="20dp" />
+        android:layout_alignParentBottom="true" />
 
-    <TextView
-        android:id="@+id/btnVerMatches"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Ver meus matches"
-        android:textColor="@color/purple_primary"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:layout_gravity="center"
-        android:padding="8dp"
-        android:clickable="true"
-        android:focusable="true" />
-
-    <TextView
-        android:id="@+id/btnCriarPerfil"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="+ Criar meu perfil"
-        android:textColor="@color/purple_primary"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:layout_gravity="center"
-        android:padding="8dp"
-        android:clickable="true"
-        android:focusable="true" />
-
-    <TextView
-        android:id="@+id/btnTrocarUsuario"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="🚪 Sair"
-        android:textColor="@color/purple_primary"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:layout_gravity="center"
-        android:padding="8dp"
-        android:clickable="true"
-        android:focusable="true" />
-
-    <!-- Lista de sugestões -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerSugestoes"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
-
-</LinearLayout>
+</RelativeLayout>

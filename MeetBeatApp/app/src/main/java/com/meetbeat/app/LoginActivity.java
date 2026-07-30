@@ -24,6 +24,7 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        androidx.core.splashscreen.SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
@@ -57,7 +58,7 @@ public class LoginActivity extends AppCompatActivity {
                         UserSession.salvarUsuarioLogado(LoginActivity.this, resultado.getUsuarioId());
                         Toast.makeText(LoginActivity.this, "Bem-vindo(a), " + resultado.getNome() + "!", Toast.LENGTH_SHORT).show();
 
-                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                        startActivity(new Intent(LoginActivity.this, MainContainerActivity.class));
                         finish();
                     } else {
                         Toast.makeText(LoginActivity.this, resultado.getMensagem(), Toast.LENGTH_SHORT).show();

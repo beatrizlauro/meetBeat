@@ -9,4 +9,6 @@
     <color name="accept_green">#B8E6B8</color>
     <color name="text_dark">#2D2D2D</color>
     <color name="text_gray">#8A8A8A</color>
+    <color name="gradient_purple_start">#7C6FE0</color>
+    <color name="gradient_purple_end">#B9A9EC</color>
 </resources>

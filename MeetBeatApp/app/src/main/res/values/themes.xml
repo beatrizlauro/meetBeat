@@ -6,4 +6,10 @@
     </style>
 
     <style name="Theme.MeetBeat" parent="Base.Theme.MeetBeat" />
+
+    <style name="Theme.MeetBeat.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/purple_light</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_mic_logo</item>
+        <item name="postSplashScreenTheme">@style/Theme.MeetBeat</item>
+    </style>
 </resources>
