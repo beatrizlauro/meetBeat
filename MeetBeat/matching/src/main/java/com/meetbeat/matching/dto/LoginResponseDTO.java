@@ -6,16 +6,19 @@ public class LoginResponseDTO {
     private String mensagem;
     private Long usuarioId;
     private String nome;
+    private boolean onboardingCompleto;
 
-    public LoginResponseDTO(boolean sucesso, String mensagem, Long usuarioId, String nome) {
+    public LoginResponseDTO(boolean sucesso, String mensagem, Long usuarioId, String nome, boolean onboardingCompleto) {
         this.sucesso = sucesso;
         this.mensagem = mensagem;
         this.usuarioId = usuarioId;
         this.nome = nome;
+        this.onboardingCompleto = onboardingCompleto;
     }
 
     public boolean isSucesso() { return sucesso; }
     public String getMensagem() { return mensagem; }
     public Long getUsuarioId() { return usuarioId; }
     public String getNome() { return nome; }
+    public boolean isOnboardingCompleto() { return onboardingCompleto; }
 }

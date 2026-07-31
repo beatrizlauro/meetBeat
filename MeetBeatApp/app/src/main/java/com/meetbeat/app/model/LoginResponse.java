@@ -6,6 +6,7 @@ public class LoginResponse {
     private String mensagem;
     private Long usuarioId;
     private String nome;
+    private boolean onboardingCompleto;
 
     public boolean isSucesso() {
         return sucesso;
@@ -21,5 +22,9 @@ public class LoginResponse {
 
     public String getNome() {
         return nome;
+    }
+
+    public boolean isOnboardingCompleto() {
+        return onboardingCompleto;
     }
 }

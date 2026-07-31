@@ -1,5 +1,6 @@
 package com.meetbeat.matching.controller;
 
+import com.meetbeat.matching.dto.AtualizarBioDTO;
 import com.meetbeat.matching.dto.GeneroDTO;
 import com.meetbeat.matching.dto.LoginRequestDTO;
 import com.meetbeat.matching.dto.LoginResponseDTO;
@@ -65,6 +66,7 @@ public class UserController {
         UserNode novoUsuario = new UserNode(dto.getNome(), dto.getBio());
         novoUsuario.setUsername(dto.getUsername());
         novoUsuario.setSenhaHash(passwordEncoder.encode(dto.getSenha()));
+        novoUsuario.setOnboardingCompleto(false);
 
         return ResponseEntity.ok(userRepository.save(novoUsuario));
     }
@@ -74,7 +76,7 @@ public class UserController {
 
         String cypher = """
             MATCH (p:Pessoa {username: $username})
-            RETURN id(p) AS userId, p.nome AS userNome, p.senhaHash AS senhaHash
+            RETURN id(p) AS userId, p.nome AS userNome, p.senhaHash AS senhaHash, p.onboardingCompleto AS onboarding
             """;
 
         Optional<Object[]> resultado = neo4jClient.query(cypher)
@@ -83,24 +85,53 @@ public class UserController {
                 .mappedBy((typeSystem, record) -> new Object[]{
                         record.get("userId").asLong(),
                         record.get("userNome").asString(),
-                        record.get("senhaHash").asString(null)
+                        record.get("senhaHash").asString(null),
+                        record.get("onboarding").asBoolean(false)
                 })
                 .one();
 
         if (resultado.isEmpty()) {
-            return new LoginResponseDTO(false, "Usuário não encontrado", null, null);
+            return new LoginResponseDTO(false, "Usuário não encontrado", null, null, false);
         }
 
         Object[] dados = resultado.get();
         Long userId = (Long) dados[0];
         String userNome = (String) dados[1];
         String senhaHash = (String) dados[2];
+        Boolean onboardingCompleto = (Boolean) dados[3];
 
         if (senhaHash == null || !passwordEncoder.matches(dto.getSenha(), senhaHash)) {
-            return new LoginResponseDTO(false, "Senha incorreta", null, null);
+            return new LoginResponseDTO(false, "Senha incorreta", null, null, false);
         }
 
-        return new LoginResponseDTO(true, "Login realizado com sucesso", userId, userNome);
+        return new LoginResponseDTO(true, "Login realizado com sucesso", userId, userNome, onboardingCompleto);
+    }
+
+    @PutMapping("/{id}/bio")
+    public void atualizarBio(@PathVariable Long id, @RequestBody AtualizarBioDTO dto) {
+
+        String cypher = """
+            MATCH (p:Pessoa) WHERE id(p) = $userId
+            SET p.bio = $bio
+            """;
+
+        neo4jClient.query(cypher)
+                .bind(id).to("userId")
+                .bind(dto.getBio()).to("bio")
+                .run();
+    }
+
+    @PostMapping("/{id}/finalizar-onboarding")
+    public void finalizarOnboarding(@PathVariable Long id) {
+
+        String cypher = """
+            MATCH (p:Pessoa) WHERE id(p) = $userId
+            SET p.onboardingCompleto = true
+            """;
+
+        neo4jClient.query(cypher)
+                .bind(id).to("userId")
+                .run();
     }
 
     @GetMapping("/{id}/sugestoes")

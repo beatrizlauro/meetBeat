@@ -85,4 +85,15 @@ public class UserNode {
     public void setUsername(String username) {
         this.username = username;
     }
+
+    private Boolean onboardingCompleto;
+
+    public Boolean getOnboardingCompleto() {
+        return onboardingCompleto;
+    }
+
+    public void setOnboardingCompleto(Boolean onboardingCompleto) {
+        this.onboardingCompleto = onboardingCompleto;
+    }
+    
 }

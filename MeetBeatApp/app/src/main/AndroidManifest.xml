@@ -54,6 +54,24 @@
             android:label="Criar Perfil"
             android:theme="@style/Theme.MeetBeat" />
 
+        <activity
+            android:name=".OnboardingGenerosActivity"
+            android:exported="false"
+            android:label="Estilos musicais"
+            android:theme="@style/Theme.MeetBeat" />
+
+        <activity
+            android:name=".OnboardingBioActivity"
+            android:exported="false"
+            android:label="Sobre você"
+            android:theme="@style/Theme.MeetBeat" />
+
+        <activity
+            android:name=".OnboardingFotoActivity"
+            android:exported="false"
+            android:label="Foto de show"
+            android:theme="@style/Theme.MeetBeat" />
+
     </application>
 
 </manifest>

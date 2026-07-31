@@ -58,7 +58,13 @@ public class LoginActivity extends AppCompatActivity {
                         UserSession.salvarUsuarioLogado(LoginActivity.this, resultado.getUsuarioId());
                         Toast.makeText(LoginActivity.this, "Bem-vindo(a), " + resultado.getNome() + "!", Toast.LENGTH_SHORT).show();
 
-                        startActivity(new Intent(LoginActivity.this, MainContainerActivity.class));
+                        Intent intent;
+                        if (resultado.isOnboardingCompleto()) {
+                            intent = new Intent(LoginActivity.this, MainContainerActivity.class);
+                        } else {
+                            intent = new Intent(LoginActivity.this, OnboardingGenerosActivity.class);
+                        }
+                        startActivity(intent);
                         finish();
                     } else {
                         Toast.makeText(LoginActivity.this, resultado.getMensagem(), Toast.LENGTH_SHORT).show();
