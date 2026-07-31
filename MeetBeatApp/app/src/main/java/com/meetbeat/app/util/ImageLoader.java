@@ -50,4 +50,38 @@ public class ImageLoader {
             }
         }
     }
+
+    public static void carregarCircular(Context context, String fotoShow, ImageView imageView) {
+
+        if (fotoShow == null || fotoShow.isEmpty()) {
+            imageView.setImageResource(R.drawable.ic_launcher_background);
+            return;
+        }
+
+        RequestOptions opcoesCirculares = new RequestOptions()
+                .format(DecodeFormat.PREFER_RGB_565)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .override(1080, 1080)
+                .circleCrop();
+
+        if (fotoShow.startsWith("/uploads/")) {
+            String urlCompleta = RetrofitClient.BASE_URL.replaceAll("/$", "") + fotoShow;
+            Glide.with(context)
+                    .load(urlCompleta)
+                    .apply(opcoesCirculares)
+                    .placeholder(R.drawable.ic_launcher_background)
+                    .error(R.drawable.ic_launcher_background)
+                    .into(imageView);
+        } else {
+            int resId = context.getResources().getIdentifier(fotoShow, "drawable", context.getPackageName());
+            if (resId != 0) {
+                Glide.with(context)
+                        .load(resId)
+                        .apply(opcoesCirculares)
+                        .into(imageView);
+            } else {
+                imageView.setImageResource(R.drawable.ic_launcher_background);
+            }
+        }
+    }
 }

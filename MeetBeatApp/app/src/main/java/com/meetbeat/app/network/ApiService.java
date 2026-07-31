@@ -1,27 +1,27 @@
 package com.meetbeat.app.network;
 
-import com.meetbeat.app.model.MatchSuggestion;
-import com.meetbeat.app.model.SwipeResponse;
-import com.meetbeat.app.model.MatchConfirmado;
 import com.meetbeat.app.model.Genero;
-import com.meetbeat.app.model.NovoUsuario;
-import com.meetbeat.app.model.UsuarioSimples;
 import com.meetbeat.app.model.LoginRequest;
 import com.meetbeat.app.model.LoginResponse;
-import com.meetbeat.app.model.AtualizarBio;
+import com.meetbeat.app.model.MatchConfirmado;
+import com.meetbeat.app.model.MatchSuggestion;
+import com.meetbeat.app.model.NovoUsuario;
+import com.meetbeat.app.model.SwipeResponse;
+import com.meetbeat.app.model.UsuarioCompleto;
+import com.meetbeat.app.model.UsuarioSimples;
+import com.meetbeat.app.model.AtualizarMusicaArtista;
 
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.http.GET;
-import retrofit2.http.POST;
-import retrofit2.http.Path;
-import retrofit2.http.Body;
-import retrofit2.http.Multipart;
-import retrofit2.http.Part;
-import retrofit2.http.PUT;
-
 import okhttp3.MultipartBody;
+import retrofit2.Call;
+import retrofit2.http.Body;
+import retrofit2.http.GET;
+import retrofit2.http.Multipart;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.Part;
+import retrofit2.http.Path;
 
 public interface ApiService {
 
@@ -54,8 +54,25 @@ public interface ApiService {
     Call<LoginResponse> login(@Body LoginRequest loginRequest);
 
     @PUT("usuarios/{id}/bio")
-    Call<Void> atualizarBio(@Path("id") long id, @Body AtualizarBio bio);
+    Call<Void> atualizarBio(@Path("id") long id, @Body com.meetbeat.app.model.AtualizarBio bio);
 
     @POST("usuarios/{id}/finalizar-onboarding")
     Call<Void> finalizarOnboarding(@Path("id") long id);
+
+    @GET("usuarios/{id}")
+    Call<UsuarioCompleto> buscarUsuario(@Path("id") long id);
+
+    @GET("usuarios/{id}/posts")
+    Call<List<String>> listarPosts(@Path("id") long id);
+
+    @Multipart
+    @POST("usuarios/{id}/posts")
+    Call<String> uploadPost(@Path("id") long id, @Part MultipartBody.Part file);
+
+    @Multipart
+    @POST("usuarios/{id}/foto-perfil")
+    Call<String> uploadFotoPerfil(@Path("id") long id, @Part MultipartBody.Part file);
+
+    @PUT("usuarios/{id}/musica-artista")
+    Call<Void> atualizarMusicaArtista(@Path("id") long id, @Body AtualizarMusicaArtista dados);
 }

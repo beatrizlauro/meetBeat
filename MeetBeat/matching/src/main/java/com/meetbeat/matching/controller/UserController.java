@@ -1,6 +1,7 @@
 package com.meetbeat.matching.controller;
 
 import com.meetbeat.matching.dto.AtualizarBioDTO;
+import com.meetbeat.matching.dto.AtualizarPerfilDTO;
 import com.meetbeat.matching.dto.GeneroDTO;
 import com.meetbeat.matching.dto.LoginRequestDTO;
 import com.meetbeat.matching.dto.LoginResponseDTO;
@@ -10,6 +11,8 @@ import com.meetbeat.matching.dto.NovoUsuarioDTO;
 import com.meetbeat.matching.dto.SwipeResponseDTO;
 import com.meetbeat.matching.model.UserNode;
 import com.meetbeat.matching.repository.UserRepository;
+import com.meetbeat.matching.dto.AtualizarMusicaArtistaDTO;
+
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -279,5 +282,144 @@ public class UserController {
                 .run();
 
         return urlPublica;
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> atualizarPerfil(@PathVariable Long id, @RequestBody AtualizarPerfilDTO dto) {
+
+        // Verifica se o novo username já pertence a OUTRA pessoa
+        String verificarUsername = """
+            MATCH (p:Pessoa {username: $username})
+            WHERE id(p) <> $userId
+            RETURN count(p) AS total
+            """;
+
+        Long existente = neo4jClient.query(verificarUsername)
+                .bind(dto.getUsername()).to("username")
+                .bind(id).to("userId")
+                .fetchAs(Long.class)
+                .mappedBy((typeSystem, record) -> record.get("total").asLong())
+                .one()
+                .orElse(0L);
+
+        if (existente > 0) {
+            return ResponseEntity.status(409).body("Nome de usuário já está em uso");
+        }
+
+        String cypherBase = """
+            MATCH (p:Pessoa) WHERE id(p) = $userId
+            SET p.nome = $nome, p.username = $username, p.musicaFavorita = $musica, p.artistaFavorito = $artista
+            """;
+
+        neo4jClient.query(cypherBase)
+                .bind(id).to("userId")
+                .bind(dto.getNome()).to("nome")
+                .bind(dto.getUsername()).to("username")
+                .bind(dto.getMusicaFavorita()).to("musica")
+                .bind(dto.getArtistaFavorito()).to("artista")
+                .run();
+
+        if (dto.getNovaSenha() != null && !dto.getNovaSenha().isEmpty()) {
+            String hash = passwordEncoder.encode(dto.getNovaSenha());
+            String cypherSenha = """
+                MATCH (p:Pessoa) WHERE id(p) = $userId
+                SET p.senhaHash = $hash
+                """;
+            neo4jClient.query(cypherSenha)
+                    .bind(id).to("userId")
+                    .bind(hash).to("hash")
+                    .run();
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{id}/posts")
+    public String uploadPost(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
+
+        String uploadDir = "./uploads";
+        Files.createDirectories(Paths.get(uploadDir));
+
+        String nomeArquivo = "post_" + id + "_" + System.currentTimeMillis() + ".jpg";
+        Path caminho = Paths.get(uploadDir, nomeArquivo);
+        Files.write(caminho, file.getBytes());
+
+        String urlPublica = "/uploads/" + nomeArquivo;
+
+        String cypher = """
+            MATCH (p:Pessoa) WHERE id(p) = $userId
+            SET p.fotosPosts = coalesce(p.fotosPosts, []) + $url
+            """;
+
+        neo4jClient.query(cypher)
+                .bind(id).to("userId")
+                .bind(urlPublica).to("url")
+                .run();
+
+        return urlPublica;
+    }
+
+    @GetMapping("/{id}/posts")
+    public List<String> listarPosts(@PathVariable Long id) {
+
+        String cypher = """
+            MATCH (p:Pessoa) WHERE id(p) = $userId
+            RETURN p.fotosPosts AS posts
+            """;
+
+        return neo4jClient.query(cypher)
+                .bind(id).to("userId")
+                .fetchAs(List.class)
+                .mappedBy((typeSystem, record) -> {
+                    var value = record.get("posts");
+                    return value.isNull() ? new ArrayList<String>() : value.asList(v -> v.asString());
+                })
+                .one()
+                .orElse(new ArrayList<>());
+    }
+
+    @GetMapping("/{id}")
+    public UserNode buscarPorId(@PathVariable Long id) {
+        return userRepository.findById(id).orElse(null);
+    }
+
+    @PostMapping("/{id}/foto-perfil")
+    public String uploadFotoPerfil(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
+
+        String uploadDir = "./uploads";
+        Files.createDirectories(Paths.get(uploadDir));
+
+        String nomeArquivo = "perfil_" + id + "_" + System.currentTimeMillis() + ".jpg";
+        Path caminho = Paths.get(uploadDir, nomeArquivo);
+        Files.write(caminho, file.getBytes());
+
+        String urlPublica = "/uploads/" + nomeArquivo;
+
+        String cypher = """
+            MATCH (p:Pessoa) WHERE id(p) = $userId
+            SET p.fotoPerfil = $url
+            """;
+
+        neo4jClient.query(cypher)
+                .bind(id).to("userId")
+                .bind(urlPublica).to("url")
+                .run();
+
+        return urlPublica;
+    }
+
+    @PutMapping("/{id}/musica-artista")
+    public void atualizarMusicaArtista(@PathVariable Long id, @RequestBody AtualizarMusicaArtistaDTO dto) {
+
+        String cypher = """
+            MATCH (p:Pessoa) WHERE id(p) = $userId
+            SET p.musicaFavorita = $musica, p.artistaFavorito = $artista
+            """;
+
+        neo4jClient.query(cypher)
+                .bind(id).to("userId")
+                .bind(dto.getMusicaFavorita()).to("musica")
+                .bind(dto.getArtistaFavorito()).to("artista")
+                .run();
     }
 }

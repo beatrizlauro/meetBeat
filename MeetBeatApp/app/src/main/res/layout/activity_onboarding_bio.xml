@@ -28,7 +28,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Passo 2 de 3"
+            android:text="Passo 2 de 4"
             android:textColor="@color/text_gray"
             android:textSize="13sp"
             android:gravity="center" />
@@ -49,25 +49,66 @@
         android:textStyle="bold"
         android:gravity="center" />
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:paddingHorizontal="24dp">
+        android:layout_weight="1">
 
-        <EditText
-            android:id="@+id/editBioOnboarding"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/card_background"
-            android:padding="16dp"
-            android:hint="Fale sobre seus artistas favoritos, shows que já foi, o que procura por aqui..."
-            android:gravity="top"
-            android:minLines="6"
-            android:inputType="textMultiLine" />
+            android:orientation="vertical"
+            android:paddingHorizontal="24dp">
 
-    </LinearLayout>
+            <EditText
+                android:id="@+id/editBioOnboarding"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/card_background"
+                android:padding="16dp"
+                android:hint="Fale sobre seus artistas favoritos, shows que já foi, o que procura por aqui..."
+                android:gravity="top"
+                android:minLines="4"
+                android:inputType="textMultiLine" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Música favorita"
+                android:textColor="@color/text_gray"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/editMusicaFavorita"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/card_background"
+                android:padding="12dp"
+                android:layout_marginTop="4dp"
+                android:hint="Ex: Standing Next to You" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Artista favorito"
+                android:textColor="@color/text_gray"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/editArtistaFavorito"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/card_background"
+                android:padding="12dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="16dp"
+                android:hint="Ex: BTS" />
+
+        </LinearLayout>
+
+    </ScrollView>
 
     <TextView
         android:id="@+id/btnPularBio"

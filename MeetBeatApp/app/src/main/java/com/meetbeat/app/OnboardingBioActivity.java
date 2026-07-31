@@ -8,6 +8,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.meetbeat.app.model.AtualizarBio;
+import com.meetbeat.app.model.AtualizarMusicaArtista;
 import com.meetbeat.app.network.ApiService;
 import com.meetbeat.app.network.RetrofitClient;
 import com.meetbeat.app.util.UserSession;
@@ -19,7 +20,7 @@ import retrofit2.Response;
 public class OnboardingBioActivity extends AppCompatActivity {
 
     private ApiService apiService;
-    private EditText editBio;
+    private EditText editBio, editMusica, editArtista;
     private long meuId;
 
     @Override
@@ -31,35 +32,53 @@ public class OnboardingBioActivity extends AppCompatActivity {
         meuId = UserSession.getUsuarioLogado(this);
 
         editBio = findViewById(R.id.editBioOnboarding);
+        editMusica = findViewById(R.id.editMusicaFavorita);
+        editArtista = findViewById(R.id.editArtistaFavorito);
 
-        findViewById(R.id.btnContinuarBio).setOnClickListener(v -> salvarBioEContinuar());
+        findViewById(R.id.btnContinuarBio).setOnClickListener(v -> salvarTudoEContinuar());
         findViewById(R.id.btnPularBio).setOnClickListener(v -> irParaProximaTela());
         findViewById(R.id.btnVoltarOnboarding).setOnClickListener(v -> finish());
     }
 
-    private void salvarBioEContinuar() {
+    private void salvarTudoEContinuar() {
         String bio = editBio.getText().toString().trim();
+        String musica = editMusica.getText().toString().trim();
+        String artista = editArtista.getText().toString().trim();
 
-        if (bio.isEmpty()) {
+        if (bio.isEmpty() && musica.isEmpty() && artista.isEmpty()) {
             irParaProximaTela();
             return;
         }
 
-        apiService.atualizarBio(meuId, new AtualizarBio(bio)).enqueue(new Callback<Void>() {
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                irParaProximaTela();
-            }
+        if (!bio.isEmpty()) {
+            apiService.atualizarBio(meuId, new AtualizarBio(bio)).enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) { }
 
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                Toast.makeText(OnboardingBioActivity.this, "Erro ao salvar bio, mas você pode continuar", Toast.LENGTH_SHORT).show();
-                irParaProximaTela();
-            }
-        });
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) { }
+            });
+        }
+
+        if (!musica.isEmpty() || !artista.isEmpty()) {
+            apiService.atualizarMusicaArtista(meuId, new AtualizarMusicaArtista(musica, artista)).enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    irParaProximaTela();
+                }
+
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
+                    Toast.makeText(OnboardingBioActivity.this, "Erro ao salvar, mas você pode continuar", Toast.LENGTH_SHORT).show();
+                    irParaProximaTela();
+                }
+            });
+        } else {
+            irParaProximaTela();
+        }
     }
 
     private void irParaProximaTela() {
-        startActivity(new Intent(this, OnboardingFotoActivity.class));
+        startActivity(new Intent(this, OnboardingFotoPerfilActivity.class));
     }
 }

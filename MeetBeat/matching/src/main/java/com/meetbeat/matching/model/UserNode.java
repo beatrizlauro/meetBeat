@@ -96,4 +96,26 @@ public class UserNode {
         this.onboardingCompleto = onboardingCompleto;
     }
     
+    private String musicaFavorita;
+    private String artistaFavorito;
+    private java.util.List<String> fotosPosts = new java.util.ArrayList<>();
+
+    public String getMusicaFavorita() { return musicaFavorita; }
+    public void setMusicaFavorita(String musicaFavorita) { this.musicaFavorita = musicaFavorita; }
+
+    public String getArtistaFavorito() { return artistaFavorito; }
+    public void setArtistaFavorito(String artistaFavorito) { this.artistaFavorito = artistaFavorito; }
+
+    public java.util.List<String> getFotosPosts() { return fotosPosts; }
+    public void setFotosPosts(java.util.List<String> fotosPosts) { this.fotosPosts = fotosPosts; }
+
+    private String fotoPerfil;
+
+    public String getFotoPerfil() {
+        return fotoPerfil;
+    }
+
+    public void setFotoPerfil(String fotoPerfil) {
+        this.fotoPerfil = fotoPerfil;
+    }
 }

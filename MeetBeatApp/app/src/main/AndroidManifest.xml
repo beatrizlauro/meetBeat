@@ -72,6 +72,12 @@
             android:label="Foto de show"
             android:theme="@style/Theme.MeetBeat" />
 
+        <activity
+            android:name=".OnboardingFotoPerfilActivity"
+            android:exported="false"
+            android:label="Foto de perfil"
+            android:theme="@style/Theme.MeetBeat" />
+
     </application>
 
 </manifest>
