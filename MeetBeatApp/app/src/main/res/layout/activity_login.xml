@@ -49,6 +49,20 @@
         android:focusable="true" />
 
     <TextView
+        android:id="@+id/btnLoginGoogle"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_button_google"
+        android:gravity="center"
+        android:text="Continuar com Google"
+        android:textColor="#3C4043"
+        android:textStyle="bold"
+        android:textSize="15sp"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <TextView
         android:id="@+id/btnIrParaCadastro"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

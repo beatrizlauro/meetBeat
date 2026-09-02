@@ -1,10 +1,23 @@
 package com.meetbeat.matching.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public class NovoUsuarioDTO {
 
+    @NotBlank(message = "O nome de exibição é obrigatório")
+    @Size(max = 80, message = "O nome de exibição deve ter no máximo 80 caracteres")
     private String nome;
+
+    @NotBlank(message = "O nome de usuário é obrigatório")
+    @Size(min = 3, max = 30, message = "O nome de usuário deve ter entre 3 e 30 caracteres")
     private String username;
+
+    @Size(max = 300, message = "A biografia deve ter no máximo 300 caracteres")
     private String bio;
+
+    @NotBlank(message = "A senha é obrigatória")
+    @Size(min = 6, max = 72, message = "A senha deve ter entre 6 e 72 caracteres")
     private String senha;
 
     public String getNome() { return nome; }

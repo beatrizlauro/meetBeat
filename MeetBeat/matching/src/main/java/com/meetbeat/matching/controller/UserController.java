@@ -1,23 +1,33 @@
 package com.meetbeat.matching.controller;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.meetbeat.matching.dto.AtualizarBioDTO;
 import com.meetbeat.matching.dto.AtualizarPerfilDTO;
 import com.meetbeat.matching.dto.GeneroDTO;
+import com.meetbeat.matching.dto.GoogleLoginRequestDTO;
 import com.meetbeat.matching.dto.LoginRequestDTO;
 import com.meetbeat.matching.dto.LoginResponseDTO;
 import com.meetbeat.matching.dto.MatchConfirmadoDTO;
 import com.meetbeat.matching.dto.MatchSuggestionDTO;
 import com.meetbeat.matching.dto.NovoUsuarioDTO;
 import com.meetbeat.matching.dto.SwipeResponseDTO;
+import com.meetbeat.matching.dto.UserResponseDTO;
 import com.meetbeat.matching.model.UserNode;
 import com.meetbeat.matching.repository.UserRepository;
 import com.meetbeat.matching.dto.AtualizarMusicaArtistaDTO;
+import com.meetbeat.matching.security.JwtAuthFilter;
+import com.meetbeat.matching.security.JwtService;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,20 +45,35 @@ public class UserController {
     private final UserRepository userRepository;
     private final Neo4jClient neo4jClient;
     private final PasswordEncoder passwordEncoder;
+    private final GoogleIdTokenVerifier googleIdTokenVerifier;
+    private final JwtService jwtService;
 
-    public UserController(UserRepository userRepository, Neo4jClient neo4jClient, PasswordEncoder passwordEncoder) {
+    public UserController(UserRepository userRepository, Neo4jClient neo4jClient, PasswordEncoder passwordEncoder,
+                           GoogleIdTokenVerifier googleIdTokenVerifier, JwtService jwtService) {
         this.userRepository = userRepository;
         this.neo4jClient = neo4jClient;
         this.passwordEncoder = passwordEncoder;
+        this.googleIdTokenVerifier = googleIdTokenVerifier;
+        this.jwtService = jwtService;
+    }
+
+    // Garante que o usuário autenticado pelo token só acesse/modifique os próprios dados (OWASP API1:2019)
+    private void verificarPropriedade(HttpServletRequest request, Long id) {
+        Object usuarioAutenticadoId = request.getAttribute(JwtAuthFilter.ATRIBUTO_USUARIO_ID);
+        if (!id.equals(usuarioAutenticadoId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Você não tem permissão para acessar este recurso");
+        }
     }
 
     @GetMapping
-    public List<UserNode> listarTodos() {
-        return userRepository.findAll();
+    public List<UserResponseDTO> listarTodos() {
+        return userRepository.findAll().stream()
+                .map(UserResponseDTO::from)
+                .toList();
     }
 
     @PostMapping
-    public ResponseEntity<?> criarUsuario(@RequestBody NovoUsuarioDTO dto) {
+    public ResponseEntity<?> criarUsuario(@Valid @RequestBody NovoUsuarioDTO dto) {
 
         String verificarUsername = """
             MATCH (p:Pessoa {username: $username})
@@ -75,7 +100,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public LoginResponseDTO login(@RequestBody LoginRequestDTO dto) {
+    public LoginResponseDTO login(@Valid @RequestBody LoginRequestDTO dto) {
 
         String cypher = """
             MATCH (p:Pessoa {username: $username})
@@ -107,11 +132,67 @@ public class UserController {
             return new LoginResponseDTO(false, "Senha incorreta", null, null, false);
         }
 
-        return new LoginResponseDTO(true, "Login realizado com sucesso", userId, userNome, onboardingCompleto);
+        LoginResponseDTO resposta = new LoginResponseDTO(true, "Login realizado com sucesso", userId, userNome, onboardingCompleto);
+        resposta.setToken(jwtService.gerarToken(userId));
+        return resposta;
+    }
+
+    @PostMapping("/login-google")
+    public ResponseEntity<LoginResponseDTO> loginGoogle(@Valid @RequestBody GoogleLoginRequestDTO dto) {
+
+        GoogleIdToken idToken;
+        try {
+            idToken = googleIdTokenVerifier.verify(dto.getIdToken());
+        } catch (Exception e) {
+            idToken = null;
+        }
+
+        if (idToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new LoginResponseDTO(false, "Token do Google inválido", null, null, false));
+        }
+
+        GoogleIdToken.Payload payload = idToken.getPayload();
+        String googleId = payload.getSubject();
+        String email = payload.getEmail();
+        String nomeGoogle = (String) payload.get("name");
+
+        UserNode usuario = userRepository.findByGoogleId(googleId).orElseGet(() -> {
+            String username = gerarUsernameDisponivel(email);
+            UserNode novo = new UserNode(nomeGoogle != null && !nomeGoogle.isBlank() ? nomeGoogle : username, "");
+            novo.setUsername(username);
+            novo.setGoogleId(googleId);
+            novo.setOnboardingCompleto(false);
+            return userRepository.save(novo);
+        });
+
+        LoginResponseDTO resposta = new LoginResponseDTO(true, "Login realizado com sucesso", usuario.getId(),
+                usuario.getNome(), Boolean.TRUE.equals(usuario.getOnboardingCompleto()));
+        resposta.setToken(jwtService.gerarToken(usuario.getId()));
+        return ResponseEntity.ok(resposta);
+    }
+
+    // Deriva um nome de usuário a partir do e-mail do Google, garantindo unicidade
+    private String gerarUsernameDisponivel(String email) {
+        String base = (email != null ? email.split("@")[0] : "usuario")
+                .toLowerCase()
+                .replaceAll("[^a-z0-9]", "");
+        if (base.isEmpty()) {
+            base = "usuario";
+        }
+
+        String candidato = base;
+        int sufixo = 1;
+        while (userRepository.findByUsername(candidato).isPresent()) {
+            candidato = base + sufixo;
+            sufixo++;
+        }
+        return candidato;
     }
 
     @PutMapping("/{id}/bio")
-    public void atualizarBio(@PathVariable Long id, @RequestBody AtualizarBioDTO dto) {
+    public void atualizarBio(HttpServletRequest request, @PathVariable Long id, @Valid @RequestBody AtualizarBioDTO dto) {
+        verificarPropriedade(request, id);
 
         String cypher = """
             MATCH (p:Pessoa) WHERE id(p) = $userId
@@ -125,7 +206,8 @@ public class UserController {
     }
 
     @PostMapping("/{id}/finalizar-onboarding")
-    public void finalizarOnboarding(@PathVariable Long id) {
+    public void finalizarOnboarding(HttpServletRequest request, @PathVariable Long id) {
+        verificarPropriedade(request, id);
 
         String cypher = """
             MATCH (p:Pessoa) WHERE id(p) = $userId
@@ -138,7 +220,8 @@ public class UserController {
     }
 
     @GetMapping("/{id}/sugestoes")
-    public List<MatchSuggestionDTO> sugestoesDeMatch(@PathVariable Long id) {
+    public List<MatchSuggestionDTO> sugestoesDeMatch(HttpServletRequest request, @PathVariable Long id) {
+        verificarPropriedade(request, id);
 
         String cypher = """
             MATCH (me:Pessoa)-[:GOSTA_DE]->(g:Genero)<-[:GOSTA_DE]-(other:Pessoa)
@@ -165,7 +248,8 @@ public class UserController {
     }
 
     @PostMapping("/{id}/curtir/{targetId}")
-    public SwipeResponseDTO curtir(@PathVariable Long id, @PathVariable Long targetId) {
+    public SwipeResponseDTO curtir(HttpServletRequest request, @PathVariable Long id, @PathVariable Long targetId) {
+        verificarPropriedade(request, id);
 
         String criarCurtida = """
             MATCH (me:Pessoa), (other:Pessoa)
@@ -200,7 +284,8 @@ public class UserController {
     }
 
     @GetMapping("/{id}/matches")
-    public List<MatchConfirmadoDTO> meusMatches(@PathVariable Long id) {
+    public List<MatchConfirmadoDTO> meusMatches(HttpServletRequest request, @PathVariable Long id) {
+        verificarPropriedade(request, id);
 
         String cypher = """
             MATCH (me:Pessoa)-[:CURTIU]->(other:Pessoa)-[:CURTIU]->(me)
@@ -245,7 +330,8 @@ public class UserController {
     }
 
     @PostMapping("/{id}/interesses/{generoId}")
-    public void adicionarInteresse(@PathVariable Long id, @PathVariable Long generoId) {
+    public void adicionarInteresse(HttpServletRequest request, @PathVariable Long id, @PathVariable Long generoId) {
+        verificarPropriedade(request, id);
 
         String cypher = """
             MATCH (p:Pessoa), (g:Genero)
@@ -260,12 +346,14 @@ public class UserController {
     }
 
     @PostMapping("/{id}/foto")
-    public String uploadFoto(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
+    public String uploadFoto(HttpServletRequest request, @PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
+        verificarPropriedade(request, id);
 
+        String extensao = validarArquivoDeImagem(file);
         String uploadDir = "./uploads";
         Files.createDirectories(Paths.get(uploadDir));
 
-        String nomeArquivo = "user_" + id + "_" + System.currentTimeMillis() + ".jpg";
+        String nomeArquivo = "user_" + id + "_" + System.currentTimeMillis() + extensao;
         Path caminho = Paths.get(uploadDir, nomeArquivo);
         Files.write(caminho, file.getBytes());
 
@@ -285,7 +373,8 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> atualizarPerfil(@PathVariable Long id, @RequestBody AtualizarPerfilDTO dto) {
+    public ResponseEntity<?> atualizarPerfil(HttpServletRequest request, @PathVariable Long id, @Valid @RequestBody AtualizarPerfilDTO dto) {
+        verificarPropriedade(request, id);
 
         // Verifica se o novo username já pertence a OUTRA pessoa
         String verificarUsername = """
@@ -335,12 +424,14 @@ public class UserController {
     }
 
     @PostMapping("/{id}/posts")
-    public String uploadPost(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
+    public String uploadPost(HttpServletRequest request, @PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
+        verificarPropriedade(request, id);
 
+        String extensao = validarArquivoDeImagem(file);
         String uploadDir = "./uploads";
         Files.createDirectories(Paths.get(uploadDir));
 
-        String nomeArquivo = "post_" + id + "_" + System.currentTimeMillis() + ".jpg";
+        String nomeArquivo = "post_" + id + "_" + System.currentTimeMillis() + extensao;
         Path caminho = Paths.get(uploadDir, nomeArquivo);
         Files.write(caminho, file.getBytes());
 
@@ -360,7 +451,8 @@ public class UserController {
     }
 
     @GetMapping("/{id}/posts")
-    public List<String> listarPosts(@PathVariable Long id) {
+    public List<String> listarPosts(HttpServletRequest request, @PathVariable Long id) {
+        verificarPropriedade(request, id);
 
         String cypher = """
             MATCH (p:Pessoa) WHERE id(p) = $userId
@@ -379,17 +471,23 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public UserNode buscarPorId(@PathVariable Long id) {
-        return userRepository.findById(id).orElse(null);
+    public ResponseEntity<UserResponseDTO> buscarPorId(HttpServletRequest request, @PathVariable Long id) {
+        verificarPropriedade(request, id);
+        return userRepository.findById(id)
+                .map(UserResponseDTO::from)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping("/{id}/foto-perfil")
-    public String uploadFotoPerfil(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
+    public String uploadFotoPerfil(HttpServletRequest request, @PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
+        verificarPropriedade(request, id);
 
+        String extensao = validarArquivoDeImagem(file);
         String uploadDir = "./uploads";
         Files.createDirectories(Paths.get(uploadDir));
 
-        String nomeArquivo = "perfil_" + id + "_" + System.currentTimeMillis() + ".jpg";
+        String nomeArquivo = "perfil_" + id + "_" + System.currentTimeMillis() + extensao;
         Path caminho = Paths.get(uploadDir, nomeArquivo);
         Files.write(caminho, file.getBytes());
 
@@ -409,7 +507,8 @@ public class UserController {
     }
 
     @PutMapping("/{id}/musica-artista")
-    public void atualizarMusicaArtista(@PathVariable Long id, @RequestBody AtualizarMusicaArtistaDTO dto) {
+    public void atualizarMusicaArtista(HttpServletRequest request, @PathVariable Long id, @Valid @RequestBody AtualizarMusicaArtistaDTO dto) {
+        verificarPropriedade(request, id);
 
         String cypher = """
             MATCH (p:Pessoa) WHERE id(p) = $userId
@@ -421,5 +520,22 @@ public class UserController {
                 .bind(dto.getMusicaFavorita()).to("musica")
                 .bind(dto.getArtistaFavorito()).to("artista")
                 .run();
+    }
+
+    // Confere o content-type real do arquivo antes de gravá-lo em disco (Seção 2.4 do TCC)
+    private String validarArquivoDeImagem(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nenhum arquivo foi enviado");
+        }
+
+        String contentType = file.getContentType();
+        if ("image/jpeg".equals(contentType)) {
+            return ".jpg";
+        }
+        if ("image/png".equals(contentType)) {
+            return ".png";
+        }
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Formato de arquivo não suportado. Envie uma imagem JPEG ou PNG");
     }
 }

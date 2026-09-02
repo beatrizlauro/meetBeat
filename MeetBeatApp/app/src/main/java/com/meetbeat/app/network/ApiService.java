@@ -1,6 +1,7 @@
 package com.meetbeat.app.network;
 
 import com.meetbeat.app.model.Genero;
+import com.meetbeat.app.model.GoogleLoginRequest;
 import com.meetbeat.app.model.LoginRequest;
 import com.meetbeat.app.model.LoginResponse;
 import com.meetbeat.app.model.MatchConfirmado;
@@ -52,6 +53,9 @@ public interface ApiService {
 
     @POST("usuarios/login")
     Call<LoginResponse> login(@Body LoginRequest loginRequest);
+
+    @POST("usuarios/login-google")
+    Call<LoginResponse> loginGoogle(@Body GoogleLoginRequest googleLoginRequest);
 
     @PUT("usuarios/{id}/bio")
     Call<Void> atualizarBio(@Path("id") long id, @Body com.meetbeat.app.model.AtualizarBio bio);

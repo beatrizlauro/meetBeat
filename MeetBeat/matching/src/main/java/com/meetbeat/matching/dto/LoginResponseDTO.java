@@ -7,6 +7,7 @@ public class LoginResponseDTO {
     private Long usuarioId;
     private String nome;
     private boolean onboardingCompleto;
+    private String token;
 
     public LoginResponseDTO(boolean sucesso, String mensagem, Long usuarioId, String nome, boolean onboardingCompleto) {
         this.sucesso = sucesso;
@@ -21,4 +22,7 @@ public class LoginResponseDTO {
     public Long getUsuarioId() { return usuarioId; }
     public String getNome() { return nome; }
     public boolean isOnboardingCompleto() { return onboardingCompleto; }
+
+    public String getToken() { return token; }
+    public void setToken(String token) { this.token = token; }
 }

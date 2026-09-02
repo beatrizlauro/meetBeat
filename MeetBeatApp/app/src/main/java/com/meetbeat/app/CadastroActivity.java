@@ -7,11 +7,13 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.meetbeat.app.model.GoogleLoginRequest;
 import com.meetbeat.app.model.LoginRequest;
 import com.meetbeat.app.model.LoginResponse;
 import com.meetbeat.app.model.NovoUsuario;
 import com.meetbeat.app.network.ApiService;
 import com.meetbeat.app.network.RetrofitClient;
+import com.meetbeat.app.util.GoogleAuthHelper;
 import com.meetbeat.app.util.UserSession;
 
 import retrofit2.Call;
@@ -36,6 +38,42 @@ public class CadastroActivity extends AppCompatActivity {
 
         findViewById(R.id.btnVoltarCadastro).setOnClickListener(v -> finish());
         findViewById(R.id.btnSalvarCadastro).setOnClickListener(v -> salvarCadastro());
+        findViewById(R.id.btnCadastroGoogle).setOnClickListener(v -> cadastrarComGoogle());
+    }
+
+    private void cadastrarComGoogle() {
+        GoogleAuthHelper.signIn(this, new GoogleAuthHelper.OnGoogleIdTokenListener() {
+            @Override
+            public void onSuccess(String idToken) {
+                apiService.loginGoogle(new GoogleLoginRequest(idToken)).enqueue(new Callback<LoginResponse>() {
+                    @Override
+                    public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
+                        if (response.isSuccessful() && response.body() != null && response.body().isSucesso()) {
+                            LoginResponse resultado = response.body();
+                            UserSession.salvarUsuarioLogado(CadastroActivity.this, resultado.getUsuarioId(), resultado.getToken());
+
+                            Intent intent = resultado.isOnboardingCompleto()
+                                    ? new Intent(CadastroActivity.this, MainContainerActivity.class)
+                                    : new Intent(CadastroActivity.this, OnboardingGenerosActivity.class);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            Toast.makeText(CadastroActivity.this, "Erro ao continuar com o Google", Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<LoginResponse> call, Throwable t) {
+                        Toast.makeText(CadastroActivity.this, "Falha de conexão: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String mensagem) {
+                Toast.makeText(CadastroActivity.this, mensagem, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void salvarCadastro() {
@@ -86,7 +124,7 @@ public class CadastroActivity extends AppCompatActivity {
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSucesso()) {
                     LoginResponse resultado = response.body();
-                    UserSession.salvarUsuarioLogado(CadastroActivity.this, resultado.getUsuarioId());
+                    UserSession.salvarUsuarioLogado(CadastroActivity.this, resultado.getUsuarioId(), resultado.getToken());
 
                     // Usuário recém-criado: onboardingCompleto sempre será false aqui
                     Intent intent = new Intent(CadastroActivity.this, OnboardingGenerosActivity.class);
