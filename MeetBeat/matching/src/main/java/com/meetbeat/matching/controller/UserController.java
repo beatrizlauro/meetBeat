@@ -19,8 +19,11 @@ import com.meetbeat.matching.dto.UserResponseDTO;
 import com.meetbeat.matching.model.UserNode;
 import com.meetbeat.matching.repository.UserRepository;
 import com.meetbeat.matching.dto.AtualizarMusicaArtistaDTO;
+import com.meetbeat.matching.dto.EsqueciSenhaDTO;
+import com.meetbeat.matching.dto.RedefinirSenhaDTO;
 import com.meetbeat.matching.security.JwtAuthFilter;
 import com.meetbeat.matching.security.JwtService;
+import com.meetbeat.matching.service.EmailService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -36,6 +39,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -50,14 +54,17 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
     private final GoogleIdTokenVerifier googleIdTokenVerifier;
     private final JwtService jwtService;
+    private final EmailService emailService;
+    private final SecureRandom secureRandom = new SecureRandom();
 
     public UserController(UserRepository userRepository, Neo4jClient neo4jClient, PasswordEncoder passwordEncoder,
-                           GoogleIdTokenVerifier googleIdTokenVerifier, JwtService jwtService) {
+                           GoogleIdTokenVerifier googleIdTokenVerifier, JwtService jwtService, EmailService emailService) {
         this.userRepository = userRepository;
         this.neo4jClient = neo4jClient;
         this.passwordEncoder = passwordEncoder;
         this.googleIdTokenVerifier = googleIdTokenVerifier;
         this.jwtService = jwtService;
+        this.emailService = emailService;
     }
 
     // Garante que o usuário autenticado pelo token só acesse/modifique os próprios dados (OWASP API1:2019)
@@ -94,8 +101,13 @@ public class UserController {
             return ResponseEntity.status(409).body("Nome de usuário já está em uso");
         }
 
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            return ResponseEntity.status(409).body("Esse e-mail já está cadastrado");
+        }
+
         UserNode novoUsuario = new UserNode(dto.getNome(), dto.getBio());
         novoUsuario.setUsername(dto.getUsername());
+        novoUsuario.setEmail(dto.getEmail());
         novoUsuario.setSenhaHash(passwordEncoder.encode(dto.getSenha()));
         novoUsuario.setOnboardingCompleto(false);
 
@@ -165,6 +177,7 @@ public class UserController {
             UserNode novo = new UserNode(nomeGoogle != null && !nomeGoogle.isBlank() ? nomeGoogle : username, "");
             novo.setUsername(username);
             novo.setGoogleId(googleId);
+            novo.setEmail(email);
             novo.setOnboardingCompleto(false);
             return userRepository.save(novo);
         });
@@ -191,6 +204,50 @@ public class UserController {
             sufixo++;
         }
         return candidato;
+    }
+
+    @PostMapping("/esqueci-senha")
+    public ResponseEntity<?> esqueciSenha(@Valid @RequestBody EsqueciSenhaDTO dto) {
+
+        userRepository.findByEmail(dto.getEmail()).ifPresent(usuario -> {
+            String codigo = gerarCodigoRecuperacao();
+            usuario.setCodigoRecuperacaoSenhaHash(passwordEncoder.encode(codigo));
+            usuario.setCodigoRecuperacaoExpiracao(System.currentTimeMillis() + 15 * 60 * 1000);
+            userRepository.save(usuario);
+            emailService.enviarCodigoRecuperacao(usuario.getEmail(), codigo);
+        });
+
+        // Mesma resposta exista ou não o e-mail, para não revelar quais e-mails estão cadastrados (OWASP API3:2019)
+        return ResponseEntity.ok().body("Se esse e-mail estiver cadastrado, você vai receber um código em instantes");
+    }
+
+    @PostMapping("/redefinir-senha")
+    public ResponseEntity<?> redefinirSenha(@Valid @RequestBody RedefinirSenhaDTO dto) {
+
+        UserNode usuario = userRepository.findByEmail(dto.getEmail()).orElse(null);
+
+        boolean codigoValido = usuario != null
+                && usuario.getCodigoRecuperacaoSenhaHash() != null
+                && usuario.getCodigoRecuperacaoExpiracao() != null
+                && usuario.getCodigoRecuperacaoExpiracao() >= System.currentTimeMillis()
+                && passwordEncoder.matches(dto.getCodigo(), usuario.getCodigoRecuperacaoSenhaHash());
+
+        if (!codigoValido) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Código inválido ou expirado");
+        }
+
+        usuario.setSenhaHash(passwordEncoder.encode(dto.getNovaSenha()));
+        usuario.setCodigoRecuperacaoSenhaHash(null);
+        usuario.setCodigoRecuperacaoExpiracao(null);
+        userRepository.save(usuario);
+
+        return ResponseEntity.ok().build();
+    }
+
+    // Código numérico de 6 dígitos (000000-999999), gerado com uma fonte de aleatoriedade
+    // segura já que ele autentica a troca de senha (OWASP API2:2019)
+    private String gerarCodigoRecuperacao() {
+        return String.format("%06d", secureRandom.nextInt(1_000_000));
     }
 
     @PutMapping("/{id}/bio")
@@ -368,6 +425,35 @@ public class UserController {
         return new ArrayList<>(resultados);
     }
 
+    @GetMapping("/{id}/curtidas-enviadas")
+    public List<CurtidaRecebidaDTO> curtidasEnviadas(HttpServletRequest request, @PathVariable Long id) {
+        verificarPropriedade(request, id);
+
+        // Diferente de "curtidas recebidas", aqui não há preferência de privacidade envolvida:
+        // é a própria lista de pessoas que EU curti, então não precisa checar mostrarCurtidas
+        String cypher = """
+            MATCH (me:Pessoa)-[:CURTIU]->(other:Pessoa)
+            WHERE id(me) = $userId AND me <> other
+              AND NOT (other)-[:CURTIU]->(me)
+            OPTIONAL MATCH (me)-[:GOSTA_DE]->(g:Genero)<-[:GOSTA_DE]-(other)
+            WITH DISTINCT other, collect(DISTINCT g.nome) AS generosComuns
+            RETURN id(other) AS userId, other.nome AS userNome, other.fotoShow AS userFoto, generosComuns
+            """;
+
+        Collection<CurtidaRecebidaDTO> resultados = neo4jClient.query(cypher)
+                .bind(id).to("userId")
+                .fetchAs(CurtidaRecebidaDTO.class)
+                .mappedBy((typeSystem, record) -> new CurtidaRecebidaDTO(
+                        record.get("userId").asLong(),
+                        record.get("userNome").asString(),
+                        record.get("userFoto").asString(""),
+                        record.get("generosComuns").asList(value -> value.asString())
+                ))
+                .all();
+
+        return new ArrayList<>(resultados);
+    }
+
     @PutMapping("/{id}/mostrar-curtidas")
     public void atualizarMostrarCurtidas(HttpServletRequest request, @PathVariable Long id, @Valid @RequestBody AtualizarMostrarCurtidasDTO dto) {
         verificarPropriedade(request, id);
@@ -472,6 +558,35 @@ public class UserController {
 
         if (existente > 0) {
             return ResponseEntity.status(409).body("Nome de usuário já está em uso");
+        }
+
+        if (dto.getEmail() != null && !dto.getEmail().isBlank()) {
+            String verificarEmail = """
+                MATCH (p:Pessoa {email: $email})
+                WHERE id(p) <> $userId
+                RETURN count(p) AS total
+                """;
+
+            Long emailExistente = neo4jClient.query(verificarEmail)
+                    .bind(dto.getEmail()).to("email")
+                    .bind(id).to("userId")
+                    .fetchAs(Long.class)
+                    .mappedBy((typeSystem, record) -> record.get("total").asLong())
+                    .one()
+                    .orElse(0L);
+
+            if (emailExistente > 0) {
+                return ResponseEntity.status(409).body("Esse e-mail já está cadastrado");
+            }
+
+            String cypherEmail = """
+                MATCH (p:Pessoa) WHERE id(p) = $userId
+                SET p.email = $email
+                """;
+            neo4jClient.query(cypherEmail)
+                    .bind(id).to("userId")
+                    .bind(dto.getEmail()).to("email")
+                    .run();
         }
 
         String cypherBase = """

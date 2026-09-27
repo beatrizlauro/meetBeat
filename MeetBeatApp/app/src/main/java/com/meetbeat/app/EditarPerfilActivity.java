@@ -37,7 +37,7 @@ public class EditarPerfilActivity extends AppCompatActivity {
     private ApiService apiService;
     private long meuId;
 
-    private EditText editNome, editUsername, editBio, editMusica, editArtista, editNovaSenha;
+    private EditText editNome, editUsername, editEmail, editBio, editMusica, editArtista, editNovaSenha;
     private ImageView imageFotoPerfil;
 
     private final ActivityResultLauncher<String> seletorDeImagem =
@@ -57,6 +57,7 @@ public class EditarPerfilActivity extends AppCompatActivity {
 
         editNome = findViewById(R.id.editNomeEditar);
         editUsername = findViewById(R.id.editUsernameEditar);
+        editEmail = findViewById(R.id.editEmailEditar);
         editBio = findViewById(R.id.editBioEditar);
         editMusica = findViewById(R.id.editMusicaEditar);
         editArtista = findViewById(R.id.editArtistaEditar);
@@ -79,6 +80,7 @@ public class EditarPerfilActivity extends AppCompatActivity {
                     UsuarioCompleto usuario = response.body();
                     editNome.setText(usuario.getNome());
                     editUsername.setText(usuario.getUsername());
+                    editEmail.setText(usuario.getEmail());
                     editBio.setText(usuario.getBio());
                     editMusica.setText(usuario.getMusicaFavorita());
                     editArtista.setText(usuario.getArtistaFavorito());
@@ -96,6 +98,7 @@ public class EditarPerfilActivity extends AppCompatActivity {
     private void salvar() {
         String nome = editNome.getText().toString().trim();
         String username = editUsername.getText().toString().trim();
+        String email = editEmail.getText().toString().trim();
         String musica = editMusica.getText().toString().trim();
         String artista = editArtista.getText().toString().trim();
         String novaSenha = editNovaSenha.getText().toString().trim();
@@ -109,12 +112,16 @@ public class EditarPerfilActivity extends AppCompatActivity {
             Toast.makeText(this, "Digite um nome de usuário", Toast.LENGTH_SHORT).show();
             return;
         }
+        if (!email.isEmpty() && !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(this, "Digite um e-mail válido", Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (!novaSenha.isEmpty() && novaSenha.length() < 6) {
             Toast.makeText(this, "A nova senha deve ter pelo menos 6 caracteres", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        AtualizarPerfil dados = new AtualizarPerfil(nome, username, musica, artista,
+        AtualizarPerfil dados = new AtualizarPerfil(nome, username, email, musica, artista,
                 novaSenha.isEmpty() ? null : novaSenha);
 
         apiService.atualizarPerfil(meuId, dados).enqueue(new Callback<Void>() {
@@ -123,7 +130,7 @@ public class EditarPerfilActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     salvarBio(bio);
                 } else if (response.code() == 409) {
-                    Toast.makeText(EditarPerfilActivity.this, "Esse nome de usuário já está em uso", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(EditarPerfilActivity.this, "Esse nome de usuário ou e-mail já está em uso", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(EditarPerfilActivity.this, "Erro ao salvar perfil", Toast.LENGTH_SHORT).show();
                 }

@@ -123,6 +123,28 @@
             android:layout_marginTop="4dp"
             android:hint="Ex: jungkook" />
 
+        <!-- E-mail -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="E-mail"
+            android:textColor="@color/text_gray"
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/editEmailEditar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_input_field"
+            android:elevation="2dp"
+            android:textColor="@color/text_dark"
+            android:textColorHint="@color/text_gray"
+            android:padding="12dp"
+            android:layout_marginTop="4dp"
+            android:hint="seu@email.com (usado para recuperar a senha)"
+            android:inputType="textEmailAddress" />
+
         <!-- Bio -->
         <TextView
             android:layout_width="wrap_content"

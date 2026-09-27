@@ -3,6 +3,7 @@ package com.meetbeat.app.network;
 import com.meetbeat.app.model.AdicionarInteresses;
 import com.meetbeat.app.model.AtualizarMostrarCurtidas;
 import com.meetbeat.app.model.CurtidaRecebida;
+import com.meetbeat.app.model.EsqueciSenhaRequest;
 import com.meetbeat.app.model.Genero;
 import com.meetbeat.app.model.GoogleLoginRequest;
 import com.meetbeat.app.model.LoginRequest;
@@ -10,6 +11,7 @@ import com.meetbeat.app.model.LoginResponse;
 import com.meetbeat.app.model.MatchConfirmado;
 import com.meetbeat.app.model.MatchSuggestion;
 import com.meetbeat.app.model.NovoUsuario;
+import com.meetbeat.app.model.RedefinirSenhaRequest;
 import com.meetbeat.app.model.SwipeResponse;
 import com.meetbeat.app.model.UsuarioCompleto;
 import com.meetbeat.app.model.UsuarioSimples;
@@ -64,6 +66,12 @@ public interface ApiService {
     @POST("usuarios/login-google")
     Call<LoginResponse> loginGoogle(@Body GoogleLoginRequest googleLoginRequest);
 
+    @POST("usuarios/esqueci-senha")
+    Call<Void> esqueciSenha(@Body EsqueciSenhaRequest dados);
+
+    @POST("usuarios/redefinir-senha")
+    Call<Void> redefinirSenha(@Body RedefinirSenhaRequest dados);
+
     @PUT("usuarios/{id}/bio")
     Call<Void> atualizarBio(@Path("id") long id, @Body com.meetbeat.app.model.AtualizarBio bio);
 
@@ -92,6 +100,9 @@ public interface ApiService {
 
     @GET("usuarios/{id}/curtidas")
     Call<List<CurtidaRecebida>> getCurtidas(@Path("id") long id);
+
+    @GET("usuarios/{id}/curtidas-enviadas")
+    Call<List<CurtidaRecebida>> getCurtidasEnviadas(@Path("id") long id);
 
     @PUT("usuarios/{id}/mostrar-curtidas")
     Call<Void> atualizarMostrarCurtidas(@Path("id") long id, @Body AtualizarMostrarCurtidas dados);

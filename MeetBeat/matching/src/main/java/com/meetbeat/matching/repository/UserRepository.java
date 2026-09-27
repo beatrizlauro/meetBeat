@@ -10,4 +10,6 @@ public interface UserRepository extends Neo4jRepository<UserNode, Long> {
     Optional<UserNode> findByGoogleId(String googleId);
 
     Optional<UserNode> findByUsername(String username);
+
+    Optional<UserNode> findByEmail(String email);
 }

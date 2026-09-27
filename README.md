@@ -127,11 +127,15 @@ No Neo4j Browser (acessível pelo botão **Connect > Query** no Neo4j Desktop), 
 | Método | Endpoint                              | Descrição                                                  |
 |--------|----------------------------------------|--------------------------------------------------------------|
 | GET    | `/usuarios`                            | Lista todos os usuários cadastrados                          |
-| POST   | `/usuarios`                            | Cria um novo usuário (nome, username, bio, senha)             |
+| POST   | `/usuarios`                            | Cria um novo usuário (nome, username, e-mail, bio, senha)      |
 | POST   | `/usuarios/login`                      | Autentica um usuário por username e senha                     |
+| POST   | `/usuarios/esqueci-senha`              | Envia por e-mail um código de recuperação de senha             |
+| POST   | `/usuarios/redefinir-senha`            | Confirma o código recebido e define uma nova senha             |
 | GET    | `/usuarios/{id}/sugestoes`             | Retorna sugestões de match ordenadas por compatibilidade      |
 | POST   | `/usuarios/{id}/curtir/{targetId}`     | Registra uma curtida; retorna se houve match mútuo            |
 | GET    | `/usuarios/{id}/matches`               | Lista os matches confirmados (curtida mútua) de um usuário    |
+| GET    | `/usuarios/{id}/curtidas`              | Lista quem curtiu o usuário e ainda não deu match              |
+| GET    | `/usuarios/{id}/curtidas-enviadas`     | Lista quem o usuário curtiu e ainda não deu match              |
 | GET    | `/usuarios/generos`                    | Lista todos os gêneros/fandoms disponíveis                    |
 | POST   | `/usuarios/{id}/interesses`            | Associa uma lista de gêneros de interesse a um usuário         |
 | POST   | `/usuarios/{id}/foto`                  | Recebe upload de arquivo de imagem e associa ao usuário        |
@@ -291,11 +295,21 @@ app/src/main/java/com/meetbeat/app/
 
 ## Fluxo de cadastro de usuário
 
-1. O app coleta nome de exibição, username, bio, gêneros de interesse selecionados e uma foto da galeria do dispositivo
-2. `POST /usuarios` cria o registro do usuário (com senha já convertida em hash) e retorna o `id` gerado; caso o username já exista, o servidor responde com erro 409
+1. O app coleta nome de exibição, username, e-mail, bio, gêneros de interesse selecionados e uma foto da galeria do dispositivo
+2. `POST /usuarios` cria o registro do usuário (com senha já convertida em hash) e retorna o `id` gerado; caso o username ou o e-mail já existam, o servidor responde com erro 409
 3. O app chama `POST /usuarios/{id}/interesses` uma única vez, enviando a lista de gêneros selecionados, e só avança para a etapa seguinte após a confirmação do servidor
 4. Se uma foto foi selecionada, o app redimensiona a imagem (limitando a 1080px no maior lado) e comprime como JPEG antes de enviá-la via `POST /usuarios/{id}/foto` (multipart/form-data); o backend salva o arquivo em disco e atualiza o campo `fotoShow` do usuário com a URL pública gerada
 5. Ao final, o app retorna à tela de Login, onde o usuário recém-criado pode autenticar-se com o username e senha cadastrados
+
+## Fluxo de recuperação de senha
+
+1. Na tela de Login, a pessoa toca em "Esqueci minha senha" e informa o e-mail cadastrado na conta
+2. `POST /usuarios/esqueci-senha` procura um usuário com esse e-mail; se encontrar, gera um código numérico de 6 dígitos, guarda o **hash** desse código (via `PasswordEncoder`, o mesmo usado nas senhas) com validade de 15 minutos, e envia o código por e-mail via SMTP
+3. Para não revelar quais e-mails estão cadastrados na base (OWASP API3:2019 — Excessive Data Exposure), a resposta é sempre a mesma independente de o e-mail existir ou não
+4. A pessoa informa o código recebido e a nova senha; `POST /usuarios/redefinir-senha` confere o hash do código e o prazo de validade antes de trocar a senha
+5. Um código só é válido uma vez: ao ser usado com sucesso, é apagado do banco
+
+**Configuração necessária:** o envio de e-mail depende de credenciais SMTP em `application.properties` (`spring.mail.username`/`spring.mail.password`, vazios por padrão). Com Gmail, use uma "senha de app" (Conta Google → Segurança → Senhas de app), não a senha normal da conta.
 
 ## Justificativa técnica: por que Neo4j?
 

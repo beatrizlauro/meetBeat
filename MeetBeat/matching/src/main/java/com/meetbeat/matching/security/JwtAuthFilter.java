@@ -17,7 +17,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final Set<String> ROTAS_PUBLICAS = Set.of(
             "/usuarios/login",
-            "/usuarios/login-google"
+            "/usuarios/login-google",
+            "/usuarios/esqueci-senha",
+            "/usuarios/redefinir-senha"
     );
 
     private final JwtService jwtService;

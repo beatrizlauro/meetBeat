@@ -9,16 +9,31 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-        android:weightSum="2">
+        android:weightSum="3">
 
         <TextView
             android:id="@+id/btnVerMatches"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Ver meus matches"
+            android:text="Meus matches"
             android:textColor="@color/purple_primary"
             android:textStyle="bold"
+            android:textSize="12sp"
+            android:gravity="center"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/btnVerCurtidasEnviadas"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Curtidas enviadas"
+            android:textColor="@color/purple_primary"
+            android:textStyle="bold"
+            android:textSize="12sp"
             android:gravity="center"
             android:padding="8dp"
             android:clickable="true"
@@ -29,9 +44,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Minhas curtidas"
+            android:text="Curtidas recebidas"
             android:textColor="@color/purple_primary"
             android:textStyle="bold"
+            android:textSize="12sp"
             android:gravity="center"
             android:padding="8dp"
             android:clickable="true"

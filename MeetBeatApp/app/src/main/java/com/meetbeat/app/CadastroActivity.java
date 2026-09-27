@@ -23,7 +23,7 @@ import retrofit2.Response;
 public class CadastroActivity extends AppCompatActivity {
 
     private ApiService apiService;
-    private EditText editNome, editUsername, editSenha;
+    private EditText editNome, editUsername, editEmail, editSenha;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +34,7 @@ public class CadastroActivity extends AppCompatActivity {
 
         editNome = findViewById(R.id.editNome);
         editUsername = findViewById(R.id.editUsername);
+        editEmail = findViewById(R.id.editEmailCadastro);
         editSenha = findViewById(R.id.editSenhaCadastro);
 
         findViewById(R.id.btnVoltarCadastro).setOnClickListener(v -> finish());
@@ -79,6 +80,7 @@ public class CadastroActivity extends AppCompatActivity {
     private void salvarCadastro() {
         String nome = editNome.getText().toString().trim();
         String username = editUsername.getText().toString().trim();
+        String email = editEmail.getText().toString().trim();
         String senha = editSenha.getText().toString().trim();
 
         if (nome.isEmpty()) {
@@ -91,13 +93,18 @@ public class CadastroActivity extends AppCompatActivity {
             return;
         }
 
+        if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(this, "Digite um e-mail válido", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         if (senha.isEmpty() || senha.length() < 4) {
             Toast.makeText(this, "A senha deve ter pelo menos 4 caracteres", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // bio vazia por enquanto — será preenchida no onboarding
-        NovoUsuario novoUsuario = new NovoUsuario(nome, username, "", senha);
+        NovoUsuario novoUsuario = new NovoUsuario(nome, username, email, "", senha);
 
         apiService.criarUsuario(novoUsuario).enqueue(new Callback<com.meetbeat.app.model.MatchSuggestion>() {
             @Override
@@ -105,7 +112,7 @@ public class CadastroActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     fazerLoginAutomatico(username, senha);
                 } else if (response.code() == 409) {
-                    Toast.makeText(CadastroActivity.this, "Esse nome de usuário já está em uso", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CadastroActivity.this, "Esse nome de usuário ou e-mail já está em uso", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(CadastroActivity.this, "Erro ao criar usuário", Toast.LENGTH_SHORT).show();
                 }

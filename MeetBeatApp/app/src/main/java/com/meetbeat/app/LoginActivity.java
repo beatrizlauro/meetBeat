@@ -40,6 +40,9 @@ public class LoginActivity extends AppCompatActivity {
         findViewById(R.id.btnIrParaCadastro).setOnClickListener(v ->
                 startActivity(new Intent(LoginActivity.this, CadastroActivity.class)));
 
+        findViewById(R.id.btnEsqueciSenha).setOnClickListener(v ->
+                startActivity(new Intent(LoginActivity.this, EsqueciSenhaActivity.class)));
+
         findViewById(R.id.btnLoginGoogle).setOnClickListener(v -> fazerLoginGoogle());
     }
 

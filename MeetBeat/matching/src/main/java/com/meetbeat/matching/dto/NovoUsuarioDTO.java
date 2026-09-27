@@ -1,5 +1,6 @@
 package com.meetbeat.matching.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -13,6 +14,10 @@ public class NovoUsuarioDTO {
     @Size(min = 3, max = 30, message = "O nome de usuário deve ter entre 3 e 30 caracteres")
     private String username;
 
+    @NotBlank(message = "O e-mail é obrigatório")
+    @Email(message = "Informe um e-mail válido")
+    private String email;
+
     @Size(max = 300, message = "A biografia deve ter no máximo 300 caracteres")
     private String bio;
 
@@ -25,6 +30,9 @@ public class NovoUsuarioDTO {
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
     public String getBio() { return bio; }
     public void setBio(String bio) { this.bio = bio; }

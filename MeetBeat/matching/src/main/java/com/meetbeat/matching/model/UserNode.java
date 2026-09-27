@@ -138,4 +138,34 @@ public class UserNode {
     public void setMostrarCurtidas(Boolean mostrarCurtidas) {
         this.mostrarCurtidas = mostrarCurtidas;
     }
+
+    private String email;
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    // Hash (não o código em si) e prazo de validade do código de recuperação de senha enviado por e-mail
+    private String codigoRecuperacaoSenhaHash;
+    private Long codigoRecuperacaoExpiracao;
+
+    public String getCodigoRecuperacaoSenhaHash() {
+        return codigoRecuperacaoSenhaHash;
+    }
+
+    public void setCodigoRecuperacaoSenhaHash(String codigoRecuperacaoSenhaHash) {
+        this.codigoRecuperacaoSenhaHash = codigoRecuperacaoSenhaHash;
+    }
+
+    public Long getCodigoRecuperacaoExpiracao() {
+        return codigoRecuperacaoExpiracao;
+    }
+
+    public void setCodigoRecuperacaoExpiracao(Long codigoRecuperacaoExpiracao) {
+        this.codigoRecuperacaoExpiracao = codigoRecuperacaoExpiracao;
+    }
 }

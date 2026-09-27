@@ -1,5 +1,6 @@
 package com.meetbeat.matching.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -12,6 +13,9 @@ public class AtualizarPerfilDTO {
     @NotBlank(message = "O nome de usuário é obrigatório")
     @Size(min = 3, max = 30, message = "O nome de usuário deve ter entre 3 e 30 caracteres")
     private String username;
+
+    @Email(message = "Informe um e-mail válido")
+    private String email; // opcional — null/vazio se a pessoa preferir não cadastrar
 
     @Size(max = 120, message = "O nome da música favorita deve ter no máximo 120 caracteres")
     private String musicaFavorita;
@@ -27,6 +31,9 @@ public class AtualizarPerfilDTO {
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
     public String getMusicaFavorita() { return musicaFavorita; }
     public void setMusicaFavorita(String musicaFavorita) { this.musicaFavorita = musicaFavorita; }

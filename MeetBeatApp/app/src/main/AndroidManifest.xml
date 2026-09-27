@@ -46,7 +46,25 @@
         <activity
             android:name=".CurtidasActivity"
             android:exported="false"
-            android:label="Minhas Curtidas"
+            android:label="Curtidas Recebidas"
+            android:theme="@style/Theme.MeetBeat" />
+
+        <activity
+            android:name=".CurtidasEnviadasActivity"
+            android:exported="false"
+            android:label="Curtidas Enviadas"
+            android:theme="@style/Theme.MeetBeat" />
+
+        <activity
+            android:name=".EsqueciSenhaActivity"
+            android:exported="false"
+            android:label="Recuperar Senha"
+            android:theme="@style/Theme.MeetBeat" />
+
+        <activity
+            android:name=".RedefinirSenhaActivity"
+            android:exported="false"
+            android:label="Redefinir Senha"
             android:theme="@style/Theme.MeetBeat" />
 
         <activity

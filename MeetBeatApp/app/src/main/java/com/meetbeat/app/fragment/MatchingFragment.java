@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.meetbeat.app.CurtidasActivity;
+import com.meetbeat.app.CurtidasEnviadasActivity;
 import com.meetbeat.app.MatchesActivity;
 import com.meetbeat.app.R;
 import com.meetbeat.app.adapter.MatchAdapter;
@@ -67,6 +68,9 @@ public class MatchingFragment extends Fragment {
 
         view.findViewById(R.id.btnVerCurtidas).setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), CurtidasActivity.class)));
+
+        view.findViewById(R.id.btnVerCurtidasEnviadas).setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), CurtidasEnviadasActivity.class)));
 
         return view;
     }

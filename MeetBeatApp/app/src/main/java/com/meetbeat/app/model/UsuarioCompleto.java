@@ -7,6 +7,7 @@ public class UsuarioCompleto {
     private long id;
     private String nome;
     private String username;
+    private String email;
     private String bio;
     private String fotoShow;
     private String fotoPerfil;
@@ -18,6 +19,7 @@ public class UsuarioCompleto {
     public long getId() { return id; }
     public String getNome() { return nome; }
     public String getUsername() { return username; }
+    public String getEmail() { return email; }
     public String getBio() { return bio; }
     public String getFotoShow() { return fotoShow; }
     public String getFotoPerfil() { return fotoPerfil; }
