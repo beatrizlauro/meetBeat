@@ -12,14 +12,11 @@
         android:gravity="center_vertical"
         android:padding="16dp">
 
-        <TextView
+        <ImageView
             android:id="@+id/btnVoltarOnboarding"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="←"
-            android:textSize="26sp"
-            android:textColor="@color/purple_primary"
-            android:textStyle="bold"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:src="@drawable/ic_back"
             android:padding="8dp"
             android:clickable="true"
             android:focusable="true" />
@@ -67,13 +64,12 @@
                 android:scaleType="centerCrop"
                 android:background="@drawable/bg_avatar_circle" />
 
-            <TextView
+            <ImageView
                 android:id="@+id/textPlaceholderIconePerfil"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
                 android:layout_gravity="center"
-                android:text="😎"
-                android:textSize="48sp" />
+                android:src="@drawable/ic_camera" />
 
         </FrameLayout>
 
@@ -109,9 +105,10 @@
         android:layout_height="52dp"
         android:layout_margin="20dp"
         android:background="@drawable/bg_button_accept"
+        android:elevation="4dp"
         android:gravity="center"
         android:text="Continuar"
-        android:textColor="#27AE60"
+        android:textColor="@color/vidro_conteudo_claro"
         android:textStyle="bold"
         android:textSize="16sp"
         android:clickable="true"

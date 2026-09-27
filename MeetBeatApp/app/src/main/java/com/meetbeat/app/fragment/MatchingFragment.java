@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.meetbeat.app.CurtidasActivity;
 import com.meetbeat.app.MatchesActivity;
 import com.meetbeat.app.R;
 import com.meetbeat.app.adapter.MatchAdapter;
@@ -55,9 +56,7 @@ public class MatchingFragment extends Fragment {
 
             @Override
             public void onRejeitar(MatchSuggestion pessoa) {
-                sugestoes.remove(pessoa);
-                adapter.notifyDataSetChanged();
-                Toast.makeText(requireContext(), "Sugestão removida", Toast.LENGTH_SHORT).show();
+                rejeitarPessoa(pessoa);
             }
         });
 
@@ -66,7 +65,8 @@ public class MatchingFragment extends Fragment {
         view.findViewById(R.id.btnVerMatches).setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), MatchesActivity.class)));
 
-        carregarSugestoes();
+        view.findViewById(R.id.btnVerCurtidas).setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), CurtidasActivity.class)));
 
         return view;
     }
@@ -74,11 +74,11 @@ public class MatchingFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        long idAtual = UserSession.getUsuarioLogado(requireContext());
-        if (idAtual != meuId) {
-            meuId = idAtual;
-            carregarSugestoes();
-        }
+        // Sempre recarrega ao voltar pra aba: com a navegação por deslize os fragments continuam
+        // vivos entre trocas de aba, então sem isso a lista ficava presa na busca antiga mesmo
+        // depois de outra pessoa se cadastrar ou completar o onboarding.
+        meuId = UserSession.getUsuarioLogado(requireContext());
+        carregarSugestoes();
     }
 
     private void carregarSugestoes() {
@@ -105,14 +105,38 @@ public class MatchingFragment extends Fragment {
             public void onResponse(Call<SwipeResponse> call, Response<SwipeResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     Toast.makeText(requireContext(), response.body().getMensagem(), Toast.LENGTH_LONG).show();
-                    sugestoes.remove(pessoa);
-                    adapter.notifyDataSetChanged();
+                    int posicao = sugestoes.indexOf(pessoa);
+                    if (posicao != -1) {
+                        sugestoes.remove(posicao);
+                        adapter.notifyItemRemoved(posicao);
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<SwipeResponse> call, Throwable t) {
                 Toast.makeText(requireContext(), "Falha ao curtir: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void rejeitarPessoa(MatchSuggestion pessoa) {
+        apiService.rejeitar(meuId, pessoa.getId()).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    int posicao = sugestoes.indexOf(pessoa);
+                    if (posicao != -1) {
+                        sugestoes.remove(posicao);
+                        adapter.notifyItemRemoved(posicao);
+                    }
+                    Toast.makeText(requireContext(), "Sugestão removida", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Toast.makeText(requireContext(), "Falha ao remover sugestão: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }

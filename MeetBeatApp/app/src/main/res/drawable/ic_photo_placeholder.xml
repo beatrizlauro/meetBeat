@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/purple_light" />
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
+    <item
+        android:width="56dp"
+        android:height="56dp"
+        android:gravity="center"
+        android:drawable="@drawable/ic_mic"
+        android:tint="@color/purple_primary" />
+</layer-list>

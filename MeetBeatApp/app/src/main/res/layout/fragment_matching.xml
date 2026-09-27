@@ -4,20 +4,40 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <include layout="@layout/app_header" />
-
-    <TextView
-        android:id="@+id/btnVerMatches"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="Ver meus matches"
-        android:textColor="@color/purple_primary"
-        android:textStyle="bold"
+        android:orientation="horizontal"
         android:gravity="center"
-        android:padding="8dp"
-        android:clickable="true"
-        android:focusable="true" />
+        android:weightSum="2">
+
+        <TextView
+            android:id="@+id/btnVerMatches"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Ver meus matches"
+            android:textColor="@color/purple_primary"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/btnVerCurtidas"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Minhas curtidas"
+            android:textColor="@color/purple_primary"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerSugestoes"

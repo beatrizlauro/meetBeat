@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/purple_light">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:padding="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingBottom="16dp">
+
+            <ImageView
+                android:id="@+id/btnVoltarEditarPerfil"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:src="@drawable/ic_back"
+                android:padding="8dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Editar Perfil"
+                android:textColor="@color/purple_primary"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:gravity="center" />
+
+            <View
+                android:layout_width="42dp"
+                android:layout_height="1dp" />
+
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
+
+            <ImageView
+                android:id="@+id/imageFotoPerfilEditar"
+                android:layout_width="110dp"
+                android:layout_height="110dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_avatar_placeholder" />
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="bottom|end"
+                android:background="@drawable/bg_button_accept"
+                android:elevation="4dp"
+                android:padding="7dp"
+                android:src="@drawable/ic_edit" />
+
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/btnTrocarFotoPerfil"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
+            android:text="Trocar foto de perfil"
+            android:textColor="@color/purple_primary"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <!-- Nome -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Nome"
+            android:textColor="@color/text_gray"
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/editNomeEditar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_input_field"
+            android:elevation="2dp"
+            android:textColor="@color/text_dark"
+            android:textColorHint="@color/text_gray"
+            android:padding="12dp"
+            android:layout_marginTop="4dp"
+            android:hint="Seu nome" />
+
+        <!-- Username -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Nome de usuário"
+            android:textColor="@color/text_gray"
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/editUsernameEditar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_input_field"
+            android:elevation="2dp"
+            android:textColor="@color/text_dark"
+            android:textColorHint="@color/text_gray"
+            android:padding="12dp"
+            android:layout_marginTop="4dp"
+            android:hint="Ex: jungkook" />
+
+        <!-- Bio -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Bio"
+            android:textColor="@color/text_gray"
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/editBioEditar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_input_field"
+            android:elevation="2dp"
+            android:textColor="@color/text_dark"
+            android:textColorHint="@color/text_gray"
+            android:padding="12dp"
+            android:layout_marginTop="4dp"
+            android:hint="Fale sobre seus artistas favoritos, shows que já foi..."
+            android:gravity="top"
+            android:minLines="3"
+            android:inputType="textMultiLine" />
+
+        <!-- Música favorita -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Música favorita"
+            android:textColor="@color/text_gray"
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/editMusicaEditar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_input_field"
+            android:elevation="2dp"
+            android:textColor="@color/text_dark"
+            android:textColorHint="@color/text_gray"
+            android:padding="12dp"
+            android:layout_marginTop="4dp"
+            android:hint="Ex: Standing Next to You" />
+
+        <!-- Artista favorito -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Artista favorito"
+            android:textColor="@color/text_gray"
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/editArtistaEditar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_input_field"
+            android:elevation="2dp"
+            android:textColor="@color/text_dark"
+            android:textColorHint="@color/text_gray"
+            android:padding="12dp"
+            android:layout_marginTop="4dp"
+            android:hint="Ex: BTS" />
+
+        <!-- Nova senha -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Nova senha (opcional)"
+            android:textColor="@color/text_gray"
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/editNovaSenhaEditar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_input_field"
+            android:elevation="2dp"
+            android:textColor="@color/text_dark"
+            android:textColorHint="@color/text_gray"
+            android:padding="12dp"
+            android:layout_marginTop="4dp"
+            android:hint="Deixe em branco para manter a atual"
+            android:inputType="textPassword" />
+
+        <TextView
+            android:id="@+id/btnSalvarEdicaoPerfil"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_margin="20dp"
+            android:background="@drawable/bg_button_accept"
+            android:elevation="4dp"
+            android:gravity="center"
+            android:text="Salvar alterações"
+            android:textColor="@color/vidro_conteudo_claro"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </LinearLayout>
+
+</ScrollView>

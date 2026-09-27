@@ -59,7 +59,7 @@ public class MatchConfirmadoAdapter extends RecyclerView.Adapter<MatchConfirmado
 
         // Clique no botão de mensagem: mantém o Toast simulando
         holder.btnMensagem.setOnClickListener(v -> {
-            Toast.makeText(context, "Função de mensagens em desenvolvimento 💬", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Função de mensagens em desenvolvimento", Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -69,8 +69,8 @@ public class MatchConfirmadoAdapter extends RecyclerView.Adapter<MatchConfirmado
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView textNome, btnMensagem;
-        ImageView imageFoto;
+        TextView textNome;
+        ImageView imageFoto, btnMensagem;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);

@@ -133,7 +133,7 @@ No Neo4j Browser (acessível pelo botão **Connect > Query** no Neo4j Desktop), 
 | POST   | `/usuarios/{id}/curtir/{targetId}`     | Registra uma curtida; retorna se houve match mútuo            |
 | GET    | `/usuarios/{id}/matches`               | Lista os matches confirmados (curtida mútua) de um usuário    |
 | GET    | `/usuarios/generos`                    | Lista todos os gêneros/fandoms disponíveis                    |
-| POST   | `/usuarios/{id}/interesses/{generoId}` | Associa um gênero de interesse a um usuário                   |
+| POST   | `/usuarios/{id}/interesses`            | Associa uma lista de gêneros de interesse a um usuário         |
 | POST   | `/usuarios/{id}/foto`                  | Recebe upload de arquivo de imagem e associa ao usuário        |
 
 Arquivos enviados via upload ficam acessíveis publicamente em `/uploads/{nome-do-arquivo}`.
@@ -293,7 +293,7 @@ app/src/main/java/com/meetbeat/app/
 
 1. O app coleta nome de exibição, username, bio, gêneros de interesse selecionados e uma foto da galeria do dispositivo
 2. `POST /usuarios` cria o registro do usuário (com senha já convertida em hash) e retorna o `id` gerado; caso o username já exista, o servidor responde com erro 409
-3. Para cada gênero selecionado, o app chama `POST /usuarios/{id}/interesses/{generoId}`
+3. O app chama `POST /usuarios/{id}/interesses` uma única vez, enviando a lista de gêneros selecionados, e só avança para a etapa seguinte após a confirmação do servidor
 4. Se uma foto foi selecionada, o app redimensiona a imagem (limitando a 1080px no maior lado) e comprime como JPEG antes de enviá-la via `POST /usuarios/{id}/foto` (multipart/form-data); o backend salva o arquivo em disco e atualiza o campo `fotoShow` do usuário com a URL pública gerada
 5. Ao final, o app retorna à tela de Login, onde o usuário recém-criado pode autenticar-se com o username e senha cadastrados
 

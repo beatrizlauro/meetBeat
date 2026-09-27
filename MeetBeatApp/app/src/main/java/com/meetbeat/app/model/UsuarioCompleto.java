@@ -13,6 +13,7 @@ public class UsuarioCompleto {
     private String musicaFavorita;
     private String artistaFavorito;
     private List<String> fotosPosts;
+    private boolean mostrarCurtidas;
 
     public long getId() { return id; }
     public String getNome() { return nome; }
@@ -23,4 +24,5 @@ public class UsuarioCompleto {
     public String getMusicaFavorita() { return musicaFavorita; }
     public String getArtistaFavorito() { return artistaFavorito; }
     public List<String> getFotosPosts() { return fotosPosts; }
+    public boolean isMostrarCurtidas() { return mostrarCurtidas; }
 }

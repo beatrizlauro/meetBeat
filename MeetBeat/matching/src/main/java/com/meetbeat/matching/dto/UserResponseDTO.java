@@ -16,6 +16,7 @@ public class UserResponseDTO {
     private String artistaFavorito;
     private Boolean onboardingCompleto;
     private List<String> fotosPosts;
+    private Boolean mostrarCurtidas;
 
     public static UserResponseDTO from(UserNode usuario) {
         UserResponseDTO dto = new UserResponseDTO();
@@ -29,6 +30,7 @@ public class UserResponseDTO {
         dto.artistaFavorito = usuario.getArtistaFavorito();
         dto.onboardingCompleto = usuario.getOnboardingCompleto();
         dto.fotosPosts = usuario.getFotosPosts();
+        dto.mostrarCurtidas = usuario.getMostrarCurtidas();
         return dto;
     }
 
@@ -42,4 +44,5 @@ public class UserResponseDTO {
     public String getArtistaFavorito() { return artistaFavorito; }
     public Boolean getOnboardingCompleto() { return onboardingCompleto; }
     public List<String> getFotosPosts() { return fotosPosts; }
+    public Boolean getMostrarCurtidas() { return mostrarCurtidas; }
 }

@@ -44,6 +44,12 @@
             android:theme="@style/Theme.MeetBeat" />
 
         <activity
+            android:name=".CurtidasActivity"
+            android:exported="false"
+            android:label="Minhas Curtidas"
+            android:theme="@style/Theme.MeetBeat" />
+
+        <activity
             android:name=".MatchDetalheActivity"
             android:exported="false"
             android:label="Detalhes do Match"
@@ -77,6 +83,12 @@
             android:name=".OnboardingFotoPerfilActivity"
             android:exported="false"
             android:label="Foto de perfil"
+            android:theme="@style/Theme.MeetBeat" />
+
+        <activity
+            android:name=".EditarPerfilActivity"
+            android:exported="false"
+            android:label="Editar Perfil"
             android:theme="@style/Theme.MeetBeat" />
 
     </application>

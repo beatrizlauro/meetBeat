@@ -148,7 +148,7 @@ public class OnboardingFotoActivity extends AppCompatActivity {
     }
 
     private void irParaApp() {
-        Toast.makeText(this, "Perfil completo! Bem-vindo(a) ao Meet & Beat 🎉", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Perfil completo! Bem-vindo(a) ao Meet & Beat", Toast.LENGTH_LONG).show();
 
         Intent intent = new Intent(this, MainContainerActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

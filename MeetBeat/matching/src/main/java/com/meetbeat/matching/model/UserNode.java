@@ -128,4 +128,14 @@ public class UserNode {
     public void setGoogleId(String googleId) {
         this.googleId = googleId;
     }
+
+    private Boolean mostrarCurtidas = true;
+
+    public Boolean getMostrarCurtidas() {
+        return mostrarCurtidas;
+    }
+
+    public void setMostrarCurtidas(Boolean mostrarCurtidas) {
+        this.mostrarCurtidas = mostrarCurtidas;
+    }
 }

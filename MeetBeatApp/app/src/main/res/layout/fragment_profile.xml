@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -7,8 +8,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-
-        <include layout="@layout/app_header" />
 
         <!-- Cabeçalho do perfil -->
         <LinearLayout
@@ -52,6 +51,15 @@
 
             </LinearLayout>
 
+            <ImageView
+                android:id="@+id/btnAlternarTema"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
+                android:src="@drawable/ic_moon"
+                android:clickable="true"
+                android:focusable="true" />
+
             <TextView
                 android:id="@+id/btnMenuPerfil"
                 android:layout_width="wrap_content"
@@ -62,6 +70,50 @@
                 android:padding="8dp"
                 android:clickable="true"
                 android:focusable="true" />
+
+        </LinearLayout>
+
+        <!-- Preferência de visibilidade das curtidas -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@drawable/bg_stat_placeholder"
+            android:elevation="3dp"
+            android:layout_margin="20dp"
+            android:padding="14dp"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Mostrar minhas curtidas"
+                    android:textColor="@color/text_dark"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Se desativar, você também não verá quem curtiu você"
+                    android:textColor="@color/text_gray"
+                    android:textSize="11sp" />
+
+            </LinearLayout>
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switchMostrarCurtidas"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:thumbTint="@color/purple_primary"
+                app:trackTint="@color/purple_light" />
 
         </LinearLayout>
 
@@ -155,17 +207,16 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:background="@drawable/bg_music_card"
+            android:elevation="3dp"
             android:layout_margin="20dp"
             android:padding="16dp"
             android:gravity="center_vertical">
 
-            <TextView
+            <ImageView
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="24dp"
                 android:layout_weight="1"
-                android:orientation="vertical"
-                android:text="🎵"
-                android:textSize="22sp" />
+                android:src="@drawable/ic_music_note" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -227,33 +278,65 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:paddingHorizontal="20dp"
-            android:paddingBottom="16dp"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
             android:weightSum="2">
 
-            <TextView
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp"
+                android:layout_margin="6dp"
+                android:layout_marginEnd="10dp"
                 android:background="@drawable/bg_stat_placeholder"
+                android:elevation="3dp"
                 android:padding="12dp"
-                android:text="🎫  Carteira"
-                android:textColor="@color/text_gray"
-                android:gravity="center"
-                android:textSize="13sp" />
+                android:orientation="horizontal"
+                android:gravity="center">
 
-            <TextView
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_ticket" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="Carteira"
+                    android:textColor="@color/text_gray"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="8dp"
+                android:layout_margin="6dp"
+                android:layout_marginStart="10dp"
                 android:background="@drawable/bg_stat_placeholder"
+                android:elevation="3dp"
                 android:padding="12dp"
-                android:text="🚗  Caronas"
-                android:textColor="@color/text_gray"
-                android:gravity="center"
-                android:textSize="13sp" />
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_car" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="Caronas"
+                    android:textColor="@color/text_gray"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
 
         </LinearLayout>
 

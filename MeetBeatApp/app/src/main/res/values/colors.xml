@@ -2,13 +2,38 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="purple_primary">#8B7FD6</color>
-    <color name="purple_light">#F3F1FB</color>
-    <color name="card_background">#FFFFFF</color>
+
+    <!-- Paleta - modo claro -->
+    <color name="purple_light">#F6F4FA</color>
+    <color name="card_background">#EEE9F7</color>
+    <color name="purple_primary">#6A4ACF</color>
+    <color name="purple_secondary">#8B73E6</color>
+    <color name="text_dark">#1C1B1F</color>
+    <color name="text_gray">#5E5A66</color>
+    <color name="text_terciario">#9A96A3</color>
+    <color name="icone_inativo">#7A7685</color>
+    <color name="cor_divisor">#E0DDEA</color>
+    <color name="cor_curtir">#8B5CF6</color>
+    <color name="cor_sucesso">#3FB984</color>
+    <color name="cor_erro">#E5484D</color>
+
     <color name="reject_pink">#F7C6C7</color>
     <color name="accept_green">#B8E6B8</color>
-    <color name="text_dark">#2D2D2D</color>
-    <color name="text_gray">#8A8A8A</color>
     <color name="gradient_purple_start">#7C6FE0</color>
     <color name="gradient_purple_end">#B9A9EC</color>
+
+    <!-- Gradiente radial da tela de login (centro claro -> bordas escurecendo) -->
+    <color name="gradiente_login_centro">#FFFFFF</color>
+    <color name="gradiente_login_meio">#F6F4FA</color>
+    <color name="gradiente_login_borda">#C9B8EA</color>
+
+    <!-- Superfícies "vidro" (transparência + sombra, sem borda marcada) -->
+    <color name="vidro_fundo">#CCFFFFFF</color>
+    <color name="vidro_fundo_intenso">#E66A4ACF</color>
+    <color name="vidro_borda">#4D6A4ACF</color>
+    <color name="vidro_conteudo_claro">#FFFFFFFF</color>
+
+    <!-- Fixa (não muda com o tema): usada em botões sobre fotos de usuário, que não
+         acompanham o modo claro/escuro do app -->
+    <color name="vidro_fundo_sobre_foto">#992B2833</color>
 </resources>

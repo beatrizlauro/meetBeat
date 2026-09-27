@@ -2,6 +2,7 @@ package com.meetbeat.app;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,6 +10,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.meetbeat.app.adapter.GeneroCardAdapter;
+import com.meetbeat.app.model.AdicionarInteresses;
 import com.meetbeat.app.model.Genero;
 import com.meetbeat.app.network.ApiService;
 import com.meetbeat.app.network.RetrofitClient;
@@ -26,6 +28,7 @@ public class OnboardingGenerosActivity extends AppCompatActivity {
     private ApiService apiService;
     private GeneroCardAdapter adapter;
     private long meuId;
+    private View btnContinuar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +47,8 @@ public class OnboardingGenerosActivity extends AppCompatActivity {
 
         carregarGeneros(recyclerView);
 
-        findViewById(R.id.btnContinuarGeneros).setOnClickListener(v -> salvarGenerosEContinuar());
+        btnContinuar = findViewById(R.id.btnContinuarGeneros);
+        btnContinuar.setOnClickListener(v -> salvarGenerosEContinuar());
         findViewById(R.id.btnVoltarOnboarding).setOnClickListener(v -> finish());
     }
 
@@ -66,16 +70,33 @@ public class OnboardingGenerosActivity extends AppCompatActivity {
     }
 
     private void salvarGenerosEContinuar() {
-        for (Long generoId : adapter.getSelecionados()) {
-            apiService.adicionarInteresse(meuId, generoId).enqueue(new Callback<Void>() {
-                @Override
-                public void onResponse(Call<Void> call, Response<Void> response) { }
+        List<Long> selecionados = new ArrayList<>(adapter.getSelecionados());
 
-                @Override
-                public void onFailure(Call<Void> call, Throwable t) { }
-            });
+        if (selecionados.isEmpty()) {
+            Toast.makeText(this, "Selecione pelo menos um gênero musical para continuar", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        startActivity(new Intent(this, OnboardingBioActivity.class));
+        btnContinuar.setEnabled(false);
+
+        apiService.adicionarInteresses(meuId, new AdicionarInteresses(selecionados)).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    startActivity(new Intent(OnboardingGenerosActivity.this, OnboardingBioActivity.class));
+                } else {
+                    btnContinuar.setEnabled(true);
+                    Toast.makeText(OnboardingGenerosActivity.this,
+                            "Erro ao salvar seus gêneros. Toque em Continuar para tentar de novo.", Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                btnContinuar.setEnabled(true);
+                Toast.makeText(OnboardingGenerosActivity.this,
+                        "Falha de conexão. Toque em Continuar para tentar de novo.", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }

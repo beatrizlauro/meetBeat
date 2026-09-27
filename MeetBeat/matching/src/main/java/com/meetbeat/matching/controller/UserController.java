@@ -2,8 +2,11 @@ package com.meetbeat.matching.controller;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.meetbeat.matching.dto.AdicionarInteressesDTO;
 import com.meetbeat.matching.dto.AtualizarBioDTO;
+import com.meetbeat.matching.dto.AtualizarMostrarCurtidasDTO;
 import com.meetbeat.matching.dto.AtualizarPerfilDTO;
+import com.meetbeat.matching.dto.CurtidaRecebidaDTO;
 import com.meetbeat.matching.dto.GeneroDTO;
 import com.meetbeat.matching.dto.GoogleLoginRequestDTO;
 import com.meetbeat.matching.dto.LoginRequestDTO;
@@ -226,6 +229,8 @@ public class UserController {
         String cypher = """
             MATCH (me:Pessoa)-[:GOSTA_DE]->(g:Genero)<-[:GOSTA_DE]-(other:Pessoa)
             WHERE id(me) = $userId AND me <> other
+              AND NOT (me)-[:CURTIU]->(other)
+              AND NOT (me)-[:REJEITOU]->(other)
             WITH other, collect(g.nome) AS generosComuns
             RETURN id(other) AS userId, other.nome AS userNome, other.fotoShow AS userFoto,
                    generosComuns, size(generosComuns) AS matchScore
@@ -277,10 +282,26 @@ public class UserController {
                 .orElse(0L);
 
         if (total > 0) {
-            return new SwipeResponseDTO(true, "É um match! 🎉");
+            return new SwipeResponseDTO(true, "É um match!");
         } else {
             return new SwipeResponseDTO(false, "Curtida registrada. Aguardando o outro usuário.");
         }
+    }
+
+    @PostMapping("/{id}/rejeitar/{targetId}")
+    public void rejeitar(HttpServletRequest request, @PathVariable Long id, @PathVariable Long targetId) {
+        verificarPropriedade(request, id);
+
+        String criarRejeicao = """
+            MATCH (me:Pessoa), (other:Pessoa)
+            WHERE id(me) = $meId AND id(other) = $otherId
+            MERGE (me)-[:REJEITOU]->(other)
+            """;
+
+        neo4jClient.query(criarRejeicao)
+                .bind(id).to("meId")
+                .bind(targetId).to("otherId")
+                .run();
     }
 
     @GetMapping("/{id}/matches")
@@ -309,6 +330,59 @@ public class UserController {
         return new ArrayList<>(resultados);
     }
 
+    @GetMapping("/{id}/curtidas")
+    public List<CurtidaRecebidaDTO> curtidasRecebidas(HttpServletRequest request, @PathVariable Long id) {
+        verificarPropriedade(request, id);
+
+        UserNode eu = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+
+        // Mesma lógica do "visualizado" do WhatsApp: só posso ver quem me curtiu se eu também permito ser visto
+        if (!Boolean.TRUE.equals(eu.getMostrarCurtidas())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Ative a opção \"Mostrar minhas curtidas\" no seu perfil para ver quem curtiu você");
+        }
+
+        String cypher = """
+            MATCH (other:Pessoa)-[:CURTIU]->(me:Pessoa)
+            WHERE id(me) = $userId AND me <> other
+              AND NOT (me)-[:CURTIU]->(other)
+              AND NOT (me)-[:REJEITOU]->(other)
+              AND coalesce(other.mostrarCurtidas, true) = true
+            OPTIONAL MATCH (me)-[:GOSTA_DE]->(g:Genero)<-[:GOSTA_DE]-(other)
+            WITH DISTINCT other, collect(DISTINCT g.nome) AS generosComuns
+            RETURN id(other) AS userId, other.nome AS userNome, other.fotoShow AS userFoto, generosComuns
+            """;
+
+        Collection<CurtidaRecebidaDTO> resultados = neo4jClient.query(cypher)
+                .bind(id).to("userId")
+                .fetchAs(CurtidaRecebidaDTO.class)
+                .mappedBy((typeSystem, record) -> new CurtidaRecebidaDTO(
+                        record.get("userId").asLong(),
+                        record.get("userNome").asString(),
+                        record.get("userFoto").asString(""),
+                        record.get("generosComuns").asList(value -> value.asString())
+                ))
+                .all();
+
+        return new ArrayList<>(resultados);
+    }
+
+    @PutMapping("/{id}/mostrar-curtidas")
+    public void atualizarMostrarCurtidas(HttpServletRequest request, @PathVariable Long id, @Valid @RequestBody AtualizarMostrarCurtidasDTO dto) {
+        verificarPropriedade(request, id);
+
+        String cypher = """
+            MATCH (p:Pessoa) WHERE id(p) = $userId
+            SET p.mostrarCurtidas = $valor
+            """;
+
+        neo4jClient.query(cypher)
+                .bind(id).to("userId")
+                .bind(dto.getMostrarCurtidas()).to("valor")
+                .run();
+    }
+
     @GetMapping("/generos")
     public List<GeneroDTO> listarGeneros() {
 
@@ -329,19 +403,24 @@ public class UserController {
         return new ArrayList<>(resultados);
     }
 
-    @PostMapping("/{id}/interesses/{generoId}")
-    public void adicionarInteresse(HttpServletRequest request, @PathVariable Long id, @PathVariable Long generoId) {
+    @PostMapping("/{id}/interesses")
+    public void adicionarInteresses(HttpServletRequest request, @PathVariable Long id, @Valid @RequestBody AdicionarInteressesDTO dto) {
         verificarPropriedade(request, id);
 
+        List<Long> generoIds = dto.getGeneroIds() != null ? dto.getGeneroIds() : List.of();
+
+        // Uma única query (em vez de uma chamada por gênero) garante que a seleção inteira do
+        // onboarding seja salva de forma atômica, sem risco de ficar pela metade
         String cypher = """
+            UNWIND $generoIds AS generoId
             MATCH (p:Pessoa), (g:Genero)
-            WHERE id(p) = $userId AND id(g) = $generoId
+            WHERE id(p) = $userId AND id(g) = generoId
             MERGE (p)-[:GOSTA_DE]->(g)
             """;
 
         neo4jClient.query(cypher)
                 .bind(id).to("userId")
-                .bind(generoId).to("generoId")
+                .bind(generoIds).to("generoIds")
                 .run();
     }
 

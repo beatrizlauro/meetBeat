@@ -4,10 +4,21 @@
     android:layout_height="match_parent"
     android:background="@color/purple_light">
 
-    <FrameLayout
-        android:id="@+id/fragmentContainer"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Cabeçalho fixo: fica parado na troca/deslize de abas e no scroll do conteúdo -->
+        <include layout="@layout/app_header" />
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPager"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+    </LinearLayout>
 
     <include
         android:id="@+id/bottomNavContainer"

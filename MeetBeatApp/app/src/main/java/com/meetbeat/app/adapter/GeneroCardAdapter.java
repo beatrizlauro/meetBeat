@@ -3,10 +3,12 @@ package com.meetbeat.app.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.meetbeat.app.R;
@@ -42,10 +44,18 @@ public class GeneroCardAdapter extends RecyclerView.Adapter<GeneroCardAdapter.Vi
         Genero genero = generos.get(position);
 
         holder.textNome.setText(genero.getNome());
-        holder.textEmoji.setText(escolherEmoji(genero.getNome()));
+        holder.imageIcone.setImageResource(escolherIcone(genero.getNome()));
 
         boolean selecionado = selecionados.contains(genero.getId());
         holder.card.setBackgroundResource(selecionado ? R.drawable.bg_card_genero_selecionado : R.drawable.bg_card_genero);
+        holder.textNome.setTextColor(ContextCompat.getColor(holder.itemView.getContext(),
+                selecionado ? R.color.vidro_conteudo_claro : R.color.text_dark));
+
+        // Sobrescreve a cor "de fábrica" de cada ícone (varia de um pra outro) para manter
+        // o mesmo padrão em todos os cards, e trocar para branco quando selecionado, já que
+        // o cinza padrão fica ilegível em cima do fundo roxo do card selecionado.
+        holder.imageIcone.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(),
+                selecionado ? R.color.vidro_conteudo_claro : R.color.text_gray));
 
         holder.card.setOnClickListener(v -> {
             if (selecionados.contains(genero.getId())) {
@@ -57,14 +67,14 @@ public class GeneroCardAdapter extends RecyclerView.Adapter<GeneroCardAdapter.Vi
         });
     }
 
-    private String escolherEmoji(String nomeGenero) {
+    private int escolherIcone(String nomeGenero) {
         String nome = nomeGenero.toLowerCase();
-        if (nome.contains("bts") || nome.contains("k-pop")) return "🎤";
-        if (nome.contains("blackpink") || nome.contains("blink")) return "💜";
-        if (nome.contains("hip-hop")) return "🎧";
-        if (nome.contains("pop")) return "🎶";
-        if (nome.contains("r&b")) return "🎹";
-        return "🎵";
+        if (nome.contains("bts") || nome.contains("k-pop")) return R.drawable.ic_mic;
+        if (nome.contains("blackpink") || nome.contains("blink")) return R.drawable.ic_heart;
+        if (nome.contains("hip-hop")) return R.drawable.ic_headphones;
+        if (nome.contains("pop")) return R.drawable.ic_music_note;
+        if (nome.contains("r&b")) return R.drawable.ic_headphones;
+        return R.drawable.ic_music_note;
     }
 
     @Override
@@ -74,12 +84,13 @@ public class GeneroCardAdapter extends RecyclerView.Adapter<GeneroCardAdapter.Vi
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         LinearLayout card;
-        TextView textEmoji, textNome;
+        ImageView imageIcone;
+        TextView textNome;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             card = itemView.findViewById(R.id.cardGenero);
-            textEmoji = itemView.findViewById(R.id.textEmojiGenero);
+            imageIcone = itemView.findViewById(R.id.imageIconeGenero);
             textNome = itemView.findViewById(R.id.textNomeGenero);
         }
     }

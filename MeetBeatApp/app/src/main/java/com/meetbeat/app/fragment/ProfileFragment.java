@@ -17,17 +17,21 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.meetbeat.app.EditarPerfilActivity;
 import com.meetbeat.app.LoginActivity;
 import com.meetbeat.app.R;
 import com.meetbeat.app.adapter.PostAdapter;
+import com.meetbeat.app.model.AtualizarMostrarCurtidas;
 import com.meetbeat.app.model.UsuarioCompleto;
 import com.meetbeat.app.network.ApiService;
 import com.meetbeat.app.network.RetrofitClient;
 import com.meetbeat.app.util.ImageLoader;
+import com.meetbeat.app.util.ThemePreference;
 import com.meetbeat.app.util.UserSession;
 
 import java.io.File;
@@ -71,15 +75,34 @@ public class ProfileFragment extends Fragment {
         postAdapter = new PostAdapter(posts);
         recyclerPosts.setAdapter(postAdapter);
 
-        carregarPerfil(view);
-        carregarPosts();
-
         view.findViewById(R.id.btnAdicionarPost).setOnClickListener(v ->
                 seletorDeImagem.launch("image/*"));
 
         view.findViewById(R.id.btnMenuPerfil).setOnClickListener(this::abrirMenuPerfil);
 
+        ImageView btnAlternarTema = view.findViewById(R.id.btnAlternarTema);
+        atualizarIconeTema(btnAlternarTema);
+        btnAlternarTema.setOnClickListener(v -> {
+            ThemePreference.alternar(requireContext());
+            requireActivity().recreate();
+        });
+
         return view;
+    }
+
+    private void atualizarIconeTema(ImageView botao) {
+        boolean escuroAtivado = ThemePreference.isModoEscuroAtivado(requireContext());
+        botao.setImageResource(escuroAtivado ? R.drawable.ic_sun : R.drawable.ic_moon);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        View view = getView();
+        if (view != null) {
+            carregarPerfil(view);
+            carregarPosts();
+        }
     }
 
     private void carregarPerfil(View view) {
@@ -89,6 +112,7 @@ public class ProfileFragment extends Fragment {
         TextView textArtistaSub = view.findViewById(R.id.textArtistaFavoritoSub);
         TextView textArtista = view.findViewById(R.id.textArtistaFavorito);
         ImageView imageFoto = view.findViewById(R.id.imagePerfilFoto);
+        SwitchCompat switchMostrarCurtidas = view.findViewById(R.id.switchMostrarCurtidas);
 
         apiService.buscarUsuario(meuId).enqueue(new Callback<UsuarioCompleto>() {
             @Override
@@ -108,12 +132,34 @@ public class ProfileFragment extends Fragment {
 
                     // Usa a foto de PERFIL (não a foto do show, que é usada no feed de matching)
                     ImageLoader.carregarCircular(requireContext(), usuario.getFotoPerfil(), imageFoto);
+
+                    // Evita disparar uma chamada à API ao só refletir o estado atual vindo do servidor
+                    switchMostrarCurtidas.setOnCheckedChangeListener(null);
+                    switchMostrarCurtidas.setChecked(usuario.isMostrarCurtidas());
+                    switchMostrarCurtidas.setOnCheckedChangeListener((buttonView, marcado) ->
+                            atualizarPreferenciaCurtidas(marcado));
                 }
             }
 
             @Override
             public void onFailure(Call<UsuarioCompleto> call, Throwable t) {
                 Toast.makeText(requireContext(), "Erro ao carregar perfil", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void atualizarPreferenciaCurtidas(boolean mostrarCurtidas) {
+        apiService.atualizarMostrarCurtidas(meuId, new AtualizarMostrarCurtidas(mostrarCurtidas)).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (!response.isSuccessful()) {
+                    Toast.makeText(requireContext(), "Erro ao salvar preferência", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Toast.makeText(requireContext(), "Falha de conexão: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -205,8 +251,7 @@ public class ProfileFragment extends Fragment {
                 startActivity(new Intent(requireContext(), LoginActivity.class));
                 requireActivity().finish();
             } else if (titulo.equals("Editar perfil")) {
-                Toast.makeText(requireContext(), "Tela de edição em construção", Toast.LENGTH_SHORT).show();
-                // Na Fase C, vamos abrir a EditarPerfilActivity aqui
+                startActivity(new Intent(requireContext(), EditarPerfilActivity.class));
             }
 
             return true;

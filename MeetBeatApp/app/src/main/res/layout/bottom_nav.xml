@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     app:cardCornerRadius="32dp"
     app:cardElevation="10dp"
-    app:cardBackgroundColor="@color/card_background">
+    app:cardBackgroundColor="@color/vidro_fundo">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -96,9 +96,11 @@
 
                 <ImageView
                     android:id="@+id/iconProfile"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_profile_placeholder" />
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:padding="2dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_avatar_placeholder" />
             </LinearLayout>
 
         </LinearLayout>

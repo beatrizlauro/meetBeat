@@ -1,5 +1,8 @@
 package com.meetbeat.app.network;
 
+import com.meetbeat.app.model.AdicionarInteresses;
+import com.meetbeat.app.model.AtualizarMostrarCurtidas;
+import com.meetbeat.app.model.CurtidaRecebida;
 import com.meetbeat.app.model.Genero;
 import com.meetbeat.app.model.GoogleLoginRequest;
 import com.meetbeat.app.model.LoginRequest;
@@ -11,6 +14,7 @@ import com.meetbeat.app.model.SwipeResponse;
 import com.meetbeat.app.model.UsuarioCompleto;
 import com.meetbeat.app.model.UsuarioSimples;
 import com.meetbeat.app.model.AtualizarMusicaArtista;
+import com.meetbeat.app.model.AtualizarPerfil;
 
 import java.util.List;
 
@@ -32,6 +36,9 @@ public interface ApiService {
     @POST("usuarios/{id}/curtir/{targetId}")
     Call<SwipeResponse> curtir(@Path("id") long id, @Path("targetId") long targetId);
 
+    @POST("usuarios/{id}/rejeitar/{targetId}")
+    Call<Void> rejeitar(@Path("id") long id, @Path("targetId") long targetId);
+
     @GET("usuarios/{id}/matches")
     Call<List<MatchConfirmado>> getMatches(@Path("id") long id);
 
@@ -41,8 +48,8 @@ public interface ApiService {
     @GET("usuarios/generos")
     Call<List<Genero>> getGeneros();
 
-    @POST("usuarios/{id}/interesses/{generoId}")
-    Call<Void> adicionarInteresse(@Path("id") long id, @Path("generoId") long generoId);
+    @POST("usuarios/{id}/interesses")
+    Call<Void> adicionarInteresses(@Path("id") long id, @Body AdicionarInteresses dados);
 
     @Multipart
     @POST("usuarios/{id}/foto")
@@ -79,4 +86,13 @@ public interface ApiService {
 
     @PUT("usuarios/{id}/musica-artista")
     Call<Void> atualizarMusicaArtista(@Path("id") long id, @Body AtualizarMusicaArtista dados);
+
+    @PUT("usuarios/{id}")
+    Call<Void> atualizarPerfil(@Path("id") long id, @Body AtualizarPerfil dados);
+
+    @GET("usuarios/{id}/curtidas")
+    Call<List<CurtidaRecebida>> getCurtidas(@Path("id") long id);
+
+    @PUT("usuarios/{id}/mostrar-curtidas")
+    Call<Void> atualizarMostrarCurtidas(@Path("id") long id, @Body AtualizarMostrarCurtidas dados);
 }

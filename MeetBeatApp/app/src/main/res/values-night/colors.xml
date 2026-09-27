@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Paleta - modo escuro -->
+    <color name="purple_light">#1C1B22</color>
+    <color name="card_background">#24232B</color>
+    <color name="purple_primary">#8B73E6</color>
+    <color name="purple_secondary">#A78BFA</color>
+    <color name="text_dark">#F4F3F7</color>
+    <color name="text_gray">#C8C5D1</color>
+    <color name="text_terciario">#8E8A98</color>
+    <color name="icone_inativo">#7A7685</color>
+    <color name="cor_divisor">#2E2C36</color>
+    <color name="cor_curtir">#A78BFA</color>
+    <color name="cor_sucesso">#4ADE80</color>
+    <color name="cor_erro">#F87171</color>
+
+    <!-- Gradiente radial da tela de login (centro claro -> bordas escurecendo) -->
+    <color name="gradiente_login_centro">#2E2C38</color>
+    <color name="gradiente_login_meio">#1C1B22</color>
+    <color name="gradiente_login_borda">#0D0C11</color>
+
+    <!-- Superfícies "vidro" (transparência + sombra, sem borda marcada) -->
+    <color name="vidro_fundo">#40FFFFFF</color>
+    <color name="vidro_fundo_intenso">#E68B73E6</color>
+    <color name="vidro_borda">#4DA78BFA</color>
+    <color name="vidro_conteudo_claro">#FFFFFFFF</color>
+</resources>

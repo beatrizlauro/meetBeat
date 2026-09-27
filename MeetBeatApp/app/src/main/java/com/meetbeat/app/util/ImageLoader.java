@@ -20,7 +20,7 @@ public class ImageLoader {
     public static void carregar(Context context, String fotoShow, ImageView imageView) {
 
         if (fotoShow == null || fotoShow.isEmpty()) {
-            imageView.setImageResource(R.drawable.ic_launcher_background);
+            imageView.setImageResource(R.drawable.ic_photo_placeholder);
             return;
         }
 
@@ -31,8 +31,8 @@ public class ImageLoader {
             Glide.with(context)
                     .load(urlCompleta)
                     .apply(OPCOES_PADRAO)
-                    .placeholder(R.drawable.ic_launcher_background)
-                    .error(R.drawable.ic_launcher_background)
+                    .placeholder(R.drawable.ic_photo_placeholder)
+                    .error(R.drawable.ic_photo_placeholder)
                     .into(imageView);
         } else {
             // Foto antiga: recurso local do app — também carregada via Glide, com redimensionamento
@@ -42,11 +42,11 @@ public class ImageLoader {
                 Glide.with(context)
                         .load(resId)
                         .apply(OPCOES_PADRAO)
-                        .placeholder(R.drawable.ic_launcher_background)
-                        .error(R.drawable.ic_launcher_background)
+                        .placeholder(R.drawable.ic_photo_placeholder)
+                        .error(R.drawable.ic_photo_placeholder)
                         .into(imageView);
             } else {
-                imageView.setImageResource(R.drawable.ic_launcher_background);
+                imageView.setImageResource(R.drawable.ic_photo_placeholder);
             }
         }
     }
@@ -54,7 +54,7 @@ public class ImageLoader {
     public static void carregarCircular(Context context, String fotoShow, ImageView imageView) {
 
         if (fotoShow == null || fotoShow.isEmpty()) {
-            imageView.setImageResource(R.drawable.ic_launcher_background);
+            imageView.setImageResource(R.drawable.ic_avatar_placeholder);
             return;
         }
 
@@ -69,8 +69,8 @@ public class ImageLoader {
             Glide.with(context)
                     .load(urlCompleta)
                     .apply(opcoesCirculares)
-                    .placeholder(R.drawable.ic_launcher_background)
-                    .error(R.drawable.ic_launcher_background)
+                    .placeholder(R.drawable.ic_avatar_placeholder)
+                    .error(R.drawable.ic_avatar_placeholder)
                     .into(imageView);
         } else {
             int resId = context.getResources().getIdentifier(fotoShow, "drawable", context.getPackageName());
@@ -80,7 +80,7 @@ public class ImageLoader {
                         .apply(opcoesCirculares)
                         .into(imageView);
             } else {
-                imageView.setImageResource(R.drawable.ic_launcher_background);
+                imageView.setImageResource(R.drawable.ic_avatar_placeholder);
             }
         }
     }
