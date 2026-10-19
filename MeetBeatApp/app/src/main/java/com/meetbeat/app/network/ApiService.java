@@ -2,6 +2,8 @@ package com.meetbeat.app.network;
 
 import com.meetbeat.app.model.AdicionarInteresses;
 import com.meetbeat.app.model.AtualizarMostrarCurtidas;
+import com.meetbeat.app.model.AtualizarMusicaArtista;
+import com.meetbeat.app.model.AtualizarPerfil;
 import com.meetbeat.app.model.CurtidaRecebida;
 import com.meetbeat.app.model.EsqueciSenhaRequest;
 import com.meetbeat.app.model.Genero;
@@ -14,21 +16,20 @@ import com.meetbeat.app.model.NovoUsuario;
 import com.meetbeat.app.model.RedefinirSenhaRequest;
 import com.meetbeat.app.model.SwipeResponse;
 import com.meetbeat.app.model.UsuarioCompleto;
-import com.meetbeat.app.model.UsuarioSimples;
-import com.meetbeat.app.model.AtualizarMusicaArtista;
-import com.meetbeat.app.model.AtualizarPerfil;
 
 import java.util.List;
 
 import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface ApiService {
 
@@ -40,6 +41,9 @@ public interface ApiService {
 
     @POST("usuarios/{id}/rejeitar/{targetId}")
     Call<Void> rejeitar(@Path("id") long id, @Path("targetId") long targetId);
+
+    @DELETE("usuarios/{id}/rejeitar/{targetId}")
+    Call<Void> desfazerRejeicao(@Path("id") long id, @Path("targetId") long targetId);
 
     @GET("usuarios/{id}/matches")
     Call<List<MatchConfirmado>> getMatches(@Path("id") long id);
@@ -53,12 +57,21 @@ public interface ApiService {
     @POST("usuarios/{id}/interesses")
     Call<Void> adicionarInteresses(@Path("id") long id, @Body AdicionarInteresses dados);
 
+    @GET("usuarios/{id}/interesses")
+    Call<List<Genero>> getInteresses(@Path("id") long id);
+
+    @PUT("usuarios/{id}/interesses")
+    Call<Void> substituirInteresses(@Path("id") long id, @Body AdicionarInteresses dados);
+
     @Multipart
     @POST("usuarios/{id}/foto")
     Call<String> uploadFoto(@Path("id") long id, @Part MultipartBody.Part file);
 
-    @GET("usuarios")
-    Call<List<UsuarioSimples>> listarUsuarios();
+    @DELETE("usuarios/{id}/foto")
+    Call<Void> removerFotoFeed(@Path("id") long id);
+
+    @DELETE("usuarios/{id}/posts")
+    Call<Void> removerPost(@Path("id") long id, @Query("url") String url);
 
     @POST("usuarios/login")
     Call<LoginResponse> login(@Body LoginRequest loginRequest);

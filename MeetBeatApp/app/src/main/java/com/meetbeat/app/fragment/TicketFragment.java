@@ -19,7 +19,10 @@ public class TicketFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_placeholder, container, false);
         TextView titulo = view.findViewById(R.id.textTituloPlaceholder);
-        titulo.setText("Revenda de Ingressos");
+        titulo.setText("Ingressos");
+
+        TextView descricao = view.findViewById(R.id.textDescricaoPlaceholder);
+        descricao.setText("Em breve: eventos perto de você, busca de shows e revenda segura de ingressos");
         return view;
     }
 }

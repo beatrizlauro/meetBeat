@@ -2,7 +2,6 @@ package com.meetbeat.app;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Patterns;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -12,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.meetbeat.app.model.EsqueciSenhaRequest;
 import com.meetbeat.app.network.ApiService;
 import com.meetbeat.app.network.RetrofitClient;
+import com.meetbeat.app.util.MensagensErro;
+import com.meetbeat.app.util.ValidacaoCampos;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -30,6 +31,8 @@ public class EsqueciSenhaActivity extends AppCompatActivity {
 
         apiService = RetrofitClient.getApiService();
         editEmail = findViewById(R.id.editEmailEsqueciSenha);
+        ValidacaoCampos.restringir(editEmail, ValidacaoCampos.Regra.SEM_ESPACOS);
+        ValidacaoCampos.validarEmailAoSair(editEmail);
         btnEnviarCodigo = findViewById(R.id.btnEnviarCodigo);
 
         findViewById(R.id.btnVoltarEsqueciSenha).setOnClickListener(v -> finish());
@@ -37,10 +40,9 @@ public class EsqueciSenhaActivity extends AppCompatActivity {
     }
 
     private void enviarCodigo() {
-        String email = editEmail.getText().toString().trim();
+        String email = editEmail.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);
 
-        if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "Digite um e-mail válido", Toast.LENGTH_SHORT).show();
+        if (ValidacaoCampos.mostrarErro(editEmail, ValidacaoCampos.erroEmail(email, true))) {
             return;
         }
 
@@ -67,7 +69,7 @@ public class EsqueciSenhaActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
                 btnEnviarCodigo.setEnabled(true);
-                Toast.makeText(EsqueciSenhaActivity.this, "Falha de conexão: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(EsqueciSenhaActivity.this, MensagensErro.SEM_CONEXAO, Toast.LENGTH_LONG).show();
             }
         });
     }

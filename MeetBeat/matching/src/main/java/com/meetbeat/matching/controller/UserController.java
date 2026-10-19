@@ -57,6 +57,17 @@ public class UserController {
     private final EmailService emailService;
     private final SecureRandom secureRandom = new SecureRandom();
 
+    private static final long VALIDADE_CODIGO_MS = 15 * 60 * 1000;
+    private static final int MAX_TENTATIVAS_CODIGO = 5;
+
+    // Mensagem única para usuário inexistente e senha errada, para que o login não revele quais
+    // nomes de usuário estão cadastrados (enumeração de contas, OWASP API2:2019)
+    private static final String MENSAGEM_LOGIN_INVALIDO = "Usuário ou senha incorretos";
+
+    // Hash usado só para gastar o mesmo tempo de verificação quando o usuário não existe; sem isso,
+    // a resposta mais rápida denunciaria que o nome de usuário não está cadastrado
+    private final String hashParaTempoConstante;
+
     public UserController(UserRepository userRepository, Neo4jClient neo4jClient, PasswordEncoder passwordEncoder,
                            GoogleIdTokenVerifier googleIdTokenVerifier, JwtService jwtService, EmailService emailService) {
         this.userRepository = userRepository;
@@ -65,6 +76,7 @@ public class UserController {
         this.googleIdTokenVerifier = googleIdTokenVerifier;
         this.jwtService = jwtService;
         this.emailService = emailService;
+        this.hashParaTempoConstante = passwordEncoder.encode("tempo-constante-" + System.nanoTime());
     }
 
     // Garante que o usuário autenticado pelo token só acesse/modifique os próprios dados (OWASP API1:2019)
@@ -73,13 +85,6 @@ public class UserController {
         if (!id.equals(usuarioAutenticadoId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Você não tem permissão para acessar este recurso");
         }
-    }
-
-    @GetMapping
-    public List<UserResponseDTO> listarTodos() {
-        return userRepository.findAll().stream()
-                .map(UserResponseDTO::from)
-                .toList();
     }
 
     @PostMapping
@@ -111,7 +116,8 @@ public class UserController {
         novoUsuario.setSenhaHash(passwordEncoder.encode(dto.getSenha()));
         novoUsuario.setOnboardingCompleto(false);
 
-        return ResponseEntity.ok(userRepository.save(novoUsuario));
+        // Responde com o DTO, e não com a entidade, que contém o hash da senha e outros campos internos
+        return ResponseEntity.ok(UserResponseDTO.from(userRepository.save(novoUsuario)));
     }
 
     @PostMapping("/login")
@@ -134,7 +140,8 @@ public class UserController {
                 .one();
 
         if (resultado.isEmpty()) {
-            return new LoginResponseDTO(false, "Usuário não encontrado", null, null, false);
+            passwordEncoder.matches(dto.getSenha(), hashParaTempoConstante);
+            return new LoginResponseDTO(false, MENSAGEM_LOGIN_INVALIDO, null, null, false);
         }
 
         Object[] dados = resultado.get();
@@ -144,7 +151,7 @@ public class UserController {
         Boolean onboardingCompleto = (Boolean) dados[3];
 
         if (senhaHash == null || !passwordEncoder.matches(dto.getSenha(), senhaHash)) {
-            return new LoginResponseDTO(false, "Senha incorreta", null, null, false);
+            return new LoginResponseDTO(false, MENSAGEM_LOGIN_INVALIDO, null, null, false);
         }
 
         LoginResponseDTO resposta = new LoginResponseDTO(true, "Login realizado com sucesso", userId, userNome, onboardingCompleto);
@@ -172,12 +179,23 @@ public class UserController {
         String email = payload.getEmail();
         String nomeGoogle = (String) payload.get("name");
 
+        boolean emailVerificado = Boolean.TRUE.equals(payload.getEmailVerified());
+
         UserNode usuario = userRepository.findByGoogleId(googleId).orElseGet(() -> {
+            // Conta já cadastrada com usuário e senha usando o mesmo e-mail (verificado pelo Google):
+            // vincula o Google a ela, em vez de criar uma segunda conta com o mesmo e-mail
+            if (emailVerificado && email != null) {
+                UserNode existente = userRepository.findByEmail(email.toLowerCase()).orElse(null);
+                if (existente != null) {
+                    existente.setGoogleId(googleId);
+                    return userRepository.save(existente);
+                }
+            }
             String username = gerarUsernameDisponivel(email);
             UserNode novo = new UserNode(nomeGoogle != null && !nomeGoogle.isBlank() ? nomeGoogle : username, "");
             novo.setUsername(username);
             novo.setGoogleId(googleId);
-            novo.setEmail(email);
+            novo.setEmail(email != null ? email.toLowerCase() : null);
             novo.setOnboardingCompleto(false);
             return userRepository.save(novo);
         });
@@ -196,6 +214,10 @@ public class UserController {
         if (base.isEmpty()) {
             base = "usuario";
         }
+        // Deixa espaço para o sufixo numérico sem passar do limite de 30 caracteres do username
+        if (base.length() > 26) {
+            base = base.substring(0, 26);
+        }
 
         String candidato = base;
         int sufixo = 1;
@@ -212,12 +234,14 @@ public class UserController {
         userRepository.findByEmail(dto.getEmail()).ifPresent(usuario -> {
             String codigo = gerarCodigoRecuperacao();
             usuario.setCodigoRecuperacaoSenhaHash(passwordEncoder.encode(codigo));
-            usuario.setCodigoRecuperacaoExpiracao(System.currentTimeMillis() + 15 * 60 * 1000);
+            usuario.setCodigoRecuperacaoExpiracao(System.currentTimeMillis() + VALIDADE_CODIGO_MS);
+            usuario.setTentativasCodigoRecuperacao(0);
             userRepository.save(usuario);
             emailService.enviarCodigoRecuperacao(usuario.getEmail(), codigo);
         });
 
-        // Mesma resposta exista ou não o e-mail, para não revelar quais e-mails estão cadastrados (OWASP API3:2019)
+        // Mesma resposta exista ou não o e-mail, para não revelar quais e-mails estão cadastrados
+        // (OWASP Forgot Password Cheat Sheet)
         return ResponseEntity.ok().body("Se esse e-mail estiver cadastrado, você vai receber um código em instantes");
     }
 
@@ -226,22 +250,37 @@ public class UserController {
 
         UserNode usuario = userRepository.findByEmail(dto.getEmail()).orElse(null);
 
-        boolean codigoValido = usuario != null
-                && usuario.getCodigoRecuperacaoSenhaHash() != null
-                && usuario.getCodigoRecuperacaoExpiracao() != null
-                && usuario.getCodigoRecuperacaoExpiracao() >= System.currentTimeMillis()
-                && passwordEncoder.matches(dto.getCodigo(), usuario.getCodigoRecuperacaoSenhaHash());
+        if (usuario == null
+                || usuario.getCodigoRecuperacaoSenhaHash() == null
+                || usuario.getCodigoRecuperacaoExpiracao() == null
+                || usuario.getCodigoRecuperacaoExpiracao() < System.currentTimeMillis()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Código inválido ou expirado");
+        }
 
-        if (!codigoValido) {
+        if (!passwordEncoder.matches(dto.getCodigo(), usuario.getCodigoRecuperacaoSenhaHash())) {
+            // Invalida o código após várias tentativas erradas, para impedir que ele seja
+            // descoberto por tentativa e erro dentro do prazo de validade (OWASP API2:2019)
+            int tentativas = (usuario.getTentativasCodigoRecuperacao() == null ? 0 : usuario.getTentativasCodigoRecuperacao()) + 1;
+            if (tentativas >= MAX_TENTATIVAS_CODIGO) {
+                limparCodigoRecuperacao(usuario);
+            } else {
+                usuario.setTentativasCodigoRecuperacao(tentativas);
+            }
+            userRepository.save(usuario);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Código inválido ou expirado");
         }
 
         usuario.setSenhaHash(passwordEncoder.encode(dto.getNovaSenha()));
-        usuario.setCodigoRecuperacaoSenhaHash(null);
-        usuario.setCodigoRecuperacaoExpiracao(null);
+        limparCodigoRecuperacao(usuario);
         userRepository.save(usuario);
 
         return ResponseEntity.ok().build();
+    }
+
+    private void limparCodigoRecuperacao(UserNode usuario) {
+        usuario.setCodigoRecuperacaoSenhaHash(null);
+        usuario.setCodigoRecuperacaoExpiracao(null);
+        usuario.setTentativasCodigoRecuperacao(null);
     }
 
     // Código numérico de 6 dígitos (000000-999999), gerado com uma fonte de aleatoriedade
@@ -290,7 +329,7 @@ public class UserController {
               AND NOT (me)-[:REJEITOU]->(other)
             WITH other, collect(g.nome) AS generosComuns
             RETURN id(other) AS userId, other.nome AS userNome, other.fotoShow AS userFoto,
-                   generosComuns, size(generosComuns) AS matchScore
+                   other.bio AS userBio, generosComuns, size(generosComuns) AS matchScore
             ORDER BY matchScore DESC
             """;
 
@@ -302,7 +341,8 @@ public class UserController {
                         record.get("userNome").asString(),
                         record.get("matchScore").asLong(),
                         record.get("generosComuns").asList(value -> value.asString()),
-                        record.get("userFoto").asString("")
+                        record.get("userFoto").asString(""),
+                        record.get("userBio").asString("")
                 ))
                 .all();
 
@@ -361,6 +401,23 @@ public class UserController {
                 .run();
     }
 
+    // Desfaz o "Não curti": a pessoa volta a aparecer nas sugestões
+    @DeleteMapping("/{id}/rejeitar/{targetId}")
+    public void desfazerRejeicao(HttpServletRequest request, @PathVariable Long id, @PathVariable Long targetId) {
+        verificarPropriedade(request, id);
+
+        String removerRejeicao = """
+            MATCH (me:Pessoa)-[r:REJEITOU]->(other:Pessoa)
+            WHERE id(me) = $meId AND id(other) = $otherId
+            DELETE r
+            """;
+
+        neo4jClient.query(removerRejeicao)
+                .bind(id).to("meId")
+                .bind(targetId).to("otherId")
+                .run();
+    }
+
     @GetMapping("/{id}/matches")
     public List<MatchConfirmadoDTO> meusMatches(HttpServletRequest request, @PathVariable Long id) {
         verificarPropriedade(request, id);
@@ -370,7 +427,7 @@ public class UserController {
             WHERE id(me) = $userId
             OPTIONAL MATCH (me)-[:GOSTA_DE]->(g:Genero)<-[:GOSTA_DE]-(other)
             WITH DISTINCT other, collect(DISTINCT g.nome) AS generosComuns
-            RETURN id(other) AS userId, other.nome AS userNome, other.fotoShow AS userFoto, generosComuns
+            RETURN id(other) AS userId, other.nome AS userNome, other.fotoShow AS userFoto, other.bio AS userBio, generosComuns
             """;
 
         Collection<MatchConfirmadoDTO> resultados = neo4jClient.query(cypher)
@@ -380,7 +437,8 @@ public class UserController {
                         record.get("userId").asLong(),
                         record.get("userNome").asString(),
                         record.get("userFoto").asString(""),
-                        record.get("generosComuns").asList(value -> value.asString())
+                        record.get("generosComuns").asList(value -> value.asString()),
+                        record.get("userBio").asString("")
                 ))
                 .all();
 
@@ -408,7 +466,7 @@ public class UserController {
               AND coalesce(other.mostrarCurtidas, true) = true
             OPTIONAL MATCH (me)-[:GOSTA_DE]->(g:Genero)<-[:GOSTA_DE]-(other)
             WITH DISTINCT other, collect(DISTINCT g.nome) AS generosComuns
-            RETURN id(other) AS userId, other.nome AS userNome, other.fotoShow AS userFoto, generosComuns
+            RETURN id(other) AS userId, other.nome AS userNome, other.fotoShow AS userFoto, other.bio AS userBio, generosComuns
             """;
 
         Collection<CurtidaRecebidaDTO> resultados = neo4jClient.query(cypher)
@@ -418,7 +476,8 @@ public class UserController {
                         record.get("userId").asLong(),
                         record.get("userNome").asString(),
                         record.get("userFoto").asString(""),
-                        record.get("generosComuns").asList(value -> value.asString())
+                        record.get("generosComuns").asList(value -> value.asString()),
+                        record.get("userBio").asString("")
                 ))
                 .all();
 
@@ -437,7 +496,7 @@ public class UserController {
               AND NOT (other)-[:CURTIU]->(me)
             OPTIONAL MATCH (me)-[:GOSTA_DE]->(g:Genero)<-[:GOSTA_DE]-(other)
             WITH DISTINCT other, collect(DISTINCT g.nome) AS generosComuns
-            RETURN id(other) AS userId, other.nome AS userNome, other.fotoShow AS userFoto, generosComuns
+            RETURN id(other) AS userId, other.nome AS userNome, other.fotoShow AS userFoto, other.bio AS userBio, generosComuns
             """;
 
         Collection<CurtidaRecebidaDTO> resultados = neo4jClient.query(cypher)
@@ -447,7 +506,8 @@ public class UserController {
                         record.get("userId").asLong(),
                         record.get("userNome").asString(),
                         record.get("userFoto").asString(""),
-                        record.get("generosComuns").asList(value -> value.asString())
+                        record.get("generosComuns").asList(value -> value.asString()),
+                        record.get("userBio").asString("")
                 ))
                 .all();
 
@@ -507,6 +567,56 @@ public class UserController {
         neo4jClient.query(cypher)
                 .bind(id).to("userId")
                 .bind(generoIds).to("generoIds")
+                .run();
+    }
+
+    @GetMapping("/{id}/interesses")
+    public List<GeneroDTO> listarInteresses(HttpServletRequest request, @PathVariable Long id) {
+        verificarPropriedade(request, id);
+
+        String cypher = """
+            MATCH (p:Pessoa)-[:GOSTA_DE]->(g:Genero)
+            WHERE id(p) = $userId
+            RETURN id(g) AS generoId, g.nome AS generoNome
+            ORDER BY g.nome
+            """;
+
+        Collection<GeneroDTO> resultados = neo4jClient.query(cypher)
+                .bind(id).to("userId")
+                .fetchAs(GeneroDTO.class)
+                .mappedBy((typeSystem, record) -> new GeneroDTO(
+                        record.get("generoId").asLong(),
+                        record.get("generoNome").asString()
+                ))
+                .all();
+
+        return new ArrayList<>(resultados);
+    }
+
+    @PutMapping("/{id}/interesses")
+    public void substituirInteresses(HttpServletRequest request, @PathVariable Long id, @Valid @RequestBody AdicionarInteressesDTO dto) {
+        verificarPropriedade(request, id);
+
+        // Sem nenhum gênero, o usuário deixaria de aparecer nas sugestões (que dependem de gêneros em comum)
+        if (dto.getGeneroIds() == null || dto.getGeneroIds().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione pelo menos um gênero musical");
+        }
+
+        // Remove os gêneros desmarcados e adiciona os novos numa única query, para a troca ser atômica
+        String cypher = """
+            MATCH (p:Pessoa) WHERE id(p) = $userId
+            OPTIONAL MATCH (p)-[r:GOSTA_DE]->(antigo:Genero)
+            WHERE NOT id(antigo) IN $generoIds
+            DELETE r
+            WITH DISTINCT p
+            UNWIND $generoIds AS generoId
+            MATCH (g:Genero) WHERE id(g) = generoId
+            MERGE (p)-[:GOSTA_DE]->(g)
+            """;
+
+        neo4jClient.query(cypher)
+                .bind(id).to("userId")
+                .bind(dto.getGeneroIds()).to("generoIds")
                 .run();
     }
 
@@ -650,18 +760,67 @@ public class UserController {
 
         String cypher = """
             MATCH (p:Pessoa) WHERE id(p) = $userId
-            RETURN p.fotosPosts AS posts
+            UNWIND coalesce(p.fotosPosts, []) AS post
+            RETURN post
             """;
 
-        return neo4jClient.query(cypher)
+        return new ArrayList<>(neo4jClient.query(cypher)
                 .bind(id).to("userId")
-                .fetchAs(List.class)
-                .mappedBy((typeSystem, record) -> {
-                    var value = record.get("posts");
-                    return value.isNull() ? new ArrayList<String>() : value.asList(v -> v.asString());
-                })
+                .fetchAs(String.class)
+                .mappedBy((typeSystem, record) -> record.get("post").asString())
+                .all());
+    }
+
+    @DeleteMapping("/{id}/foto")
+    public void removerFotoFeed(HttpServletRequest request, @PathVariable Long id) {
+        verificarPropriedade(request, id);
+
+        String cypher = """
+            MATCH (p:Pessoa) WHERE id(p) = $userId
+            WITH p, p.fotoShow AS fotoAntiga
+            REMOVE p.fotoShow
+            RETURN fotoAntiga
+            """;
+
+        String fotoAntiga = neo4jClient.query(cypher)
+                .bind(id).to("userId")
+                .fetchAs(String.class)
+                .mappedBy((typeSystem, record) -> record.get("fotoAntiga").asString(null))
                 .one()
-                .orElse(new ArrayList<>());
+                .orElse(null);
+
+        apagarArquivoDoUsuario(fotoAntiga, "user_" + id + "_");
+    }
+
+    @DeleteMapping("/{id}/posts")
+    public void removerPost(HttpServletRequest request, @PathVariable Long id, @RequestParam("url") String url) {
+        verificarPropriedade(request, id);
+
+        String cypher = """
+            MATCH (p:Pessoa) WHERE id(p) = $userId
+            SET p.fotosPosts = [foto IN coalesce(p.fotosPosts, []) WHERE foto <> $url]
+            """;
+
+        neo4jClient.query(cypher)
+                .bind(id).to("userId")
+                .bind(url).to("url")
+                .run();
+
+        apagarArquivoDoUsuario(url, "post_" + id + "_");
+    }
+
+    // Apaga do disco apenas arquivos enviados pelo próprio usuário (o nome começa com o id dele)
+    // e que estejam direto na pasta de uploads. Imagens compartilhadas, como as da base fictícia
+    // em uploads/seed, e caminhos com "/" ou "\" (tentativa de sair da pasta) nunca são apagados.
+    private void apagarArquivoDoUsuario(String url, String prefixoEsperado) {
+        if (url == null || !url.startsWith("/uploads/")) return;
+        String nomeArquivo = url.substring("/uploads/".length());
+        if (nomeArquivo.contains("/") || nomeArquivo.contains("\\") || !nomeArquivo.startsWith(prefixoEsperado)) return;
+        try {
+            Files.deleteIfExists(Paths.get("./uploads", nomeArquivo));
+        } catch (IOException ignored) {
+            // O vínculo com o perfil já foi removido; um arquivo que não pôde ser apagado só ocupa espaço
+        }
     }
 
     @GetMapping("/{id}")

@@ -1,7 +1,6 @@
 package com.meetbeat.app;
 
 import android.os.Bundle;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,10 +8,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.meetbeat.app.adapter.CurtidaAdapter;
+import com.meetbeat.app.model.AtualizarMostrarCurtidas;
 import com.meetbeat.app.model.CurtidaRecebida;
 import com.meetbeat.app.model.SwipeResponse;
 import com.meetbeat.app.network.ApiService;
 import com.meetbeat.app.network.RetrofitClient;
+import com.meetbeat.app.util.EstadoLista;
+import com.meetbeat.app.util.MensagensErro;
 import com.meetbeat.app.util.UserSession;
 
 import java.util.ArrayList;
@@ -26,7 +28,7 @@ public class CurtidasActivity extends AppCompatActivity {
 
     private ApiService apiService;
     private long meuId;
-    private TextView textEstado;
+    private EstadoLista estado;
     private RecyclerView recyclerView;
     private final List<CurtidaRecebida> curtidas = new ArrayList<>();
     private CurtidaAdapter adapter;
@@ -39,8 +41,8 @@ public class CurtidasActivity extends AppCompatActivity {
         apiService = RetrofitClient.getApiService();
         meuId = UserSession.getUsuarioLogado(this);
 
-        textEstado = findViewById(R.id.textEstadoCurtidas);
         recyclerView = findViewById(R.id.recyclerCurtidas);
+        estado = new EstadoLista(this, recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         adapter = new CurtidaAdapter(curtidas, this::curtirDeVolta);
@@ -52,6 +54,7 @@ public class CurtidasActivity extends AppCompatActivity {
     }
 
     private void carregarCurtidas() {
+        estado.carregando();
         apiService.getCurtidas(meuId).enqueue(new Callback<List<CurtidaRecebida>>() {
             @Override
             public void onResponse(Call<List<CurtidaRecebida>> call, Response<List<CurtidaRecebida>> response) {
@@ -61,20 +64,24 @@ public class CurtidasActivity extends AppCompatActivity {
                     adapter.notifyDataSetChanged();
 
                     if (curtidas.isEmpty()) {
-                        mostrarEstado("Ninguém curtiu você ainda");
+                        mostrarVazio();
                     } else {
-                        esconderEstado();
+                        estado.esconder();
                     }
                 } else if (response.code() == 403) {
-                    mostrarEstado("Ative a opção \"Mostrar minhas curtidas\" no seu perfil para ver quem curtiu você");
+                    // A preferência "Mostrar minhas curtidas" está desativada (visibilidade recíproca)
+                    estado.mostrar(R.drawable.ic_genero_coracao, "Suas curtidas estão ocultas",
+                            "Para ver quem curtiu você, suas curtidas também precisam ficar visíveis "
+                                    + "para as outras pessoas.",
+                            "Ativar \"Mostrar minhas curtidas\"", CurtidasActivity.this::ativarMostrarCurtidas);
                 } else {
-                    mostrarEstado("Erro ao carregar curtidas");
+                    estado.erro(CurtidasActivity.this::carregarCurtidas);
                 }
             }
 
             @Override
             public void onFailure(Call<List<CurtidaRecebida>> call, Throwable t) {
-                mostrarEstado("Falha de conexão: " + t.getMessage());
+                estado.erro(CurtidasActivity.this::carregarCurtidas);
             }
         });
     }
@@ -90,7 +97,7 @@ public class CurtidasActivity extends AppCompatActivity {
                         curtidas.remove(posicao);
                         adapter.notifyItemRemoved(posicao);
                         if (curtidas.isEmpty()) {
-                            mostrarEstado("Ninguém curtiu você ainda");
+                            mostrarVazio();
                         }
                     }
                 }
@@ -98,19 +105,34 @@ public class CurtidasActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<SwipeResponse> call, Throwable t) {
-                Toast.makeText(CurtidasActivity.this, "Falha ao curtir: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(CurtidasActivity.this, MensagensErro.SEM_CONEXAO, Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    private void mostrarEstado(String mensagem) {
-        textEstado.setText(mensagem);
-        textEstado.setVisibility(android.view.View.VISIBLE);
-        recyclerView.setVisibility(android.view.View.GONE);
+    private void mostrarVazio() {
+        estado.mostrar(R.drawable.ic_genero_coracao, "Ninguém curtiu seu perfil ainda",
+                "Quando alguém curtir você, a pessoa aparece aqui e você pode curtir de volta. "
+                        + "Uma bio e uma foto do feed caprichadas ajudam!",
+                "Ver sugestões", this::finish);
     }
 
-    private void esconderEstado() {
-        textEstado.setVisibility(android.view.View.GONE);
-        recyclerView.setVisibility(android.view.View.VISIBLE);
+    private void ativarMostrarCurtidas() {
+        estado.carregando();
+        apiService.atualizarMostrarCurtidas(meuId, new AtualizarMostrarCurtidas(true)).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    carregarCurtidas();
+                } else {
+                    estado.erro(CurtidasActivity.this::carregarCurtidas);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                estado.erro(CurtidasActivity.this::carregarCurtidas);
+            }
+        });
     }
 }

@@ -37,22 +37,18 @@
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/textEstadoCurtidasEnviadas"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:paddingHorizontal="32dp"
-        android:text="Você ainda não curtiu ninguém"
-        android:textColor="@color/text_gray"
-        android:textSize="15sp"
-        android:gravity="center"
-        android:visibility="gone" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerCurtidasEnviadas"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerCurtidasEnviadas"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <include layout="@layout/view_estado_lista" />
+
+    </FrameLayout>
 
 </LinearLayout>

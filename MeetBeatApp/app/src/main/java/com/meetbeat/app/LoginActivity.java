@@ -2,6 +2,7 @@ package com.meetbeat.app;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -13,7 +14,11 @@ import com.meetbeat.app.model.LoginResponse;
 import com.meetbeat.app.network.ApiService;
 import com.meetbeat.app.network.RetrofitClient;
 import com.meetbeat.app.util.GoogleAuthHelper;
+import com.meetbeat.app.util.MensagensErro;
+import com.meetbeat.app.util.MostrarSenha;
 import com.meetbeat.app.util.UserSession;
+import com.meetbeat.app.util.ValidacaoCampos;
+import com.meetbeat.app.util.VisualHelper;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -34,6 +39,8 @@ public class LoginActivity extends AppCompatActivity {
 
         editNome = findViewById(R.id.editNomeLogin);
         editSenha = findViewById(R.id.editSenhaLogin);
+        MostrarSenha.ligar(editSenha, findViewById(R.id.btnMostrarSenhaLogin));
+        ValidacaoCampos.restringir(editNome, ValidacaoCampos.Regra.USERNAME);
 
         findViewById(R.id.btnEntrar).setOnClickListener(v -> fazerLogin());
 
@@ -55,15 +62,20 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
+        View btnEntrar = findViewById(R.id.btnEntrar);
+        VisualHelper.definirOcupado(btnEntrar, true);
+
         apiService.login(new LoginRequest(username, senha)).enqueue(new Callback<LoginResponse>() {
             @Override
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
+                VisualHelper.definirOcupado(btnEntrar, false);
                 processarRespostaLogin(response);
             }
 
             @Override
             public void onFailure(Call<LoginResponse> call, Throwable t) {
-                Toast.makeText(LoginActivity.this, "Falha de conexão: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                VisualHelper.definirOcupado(btnEntrar, false);
+                Toast.makeText(LoginActivity.this, MensagensErro.SEM_CONEXAO, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -80,7 +92,7 @@ public class LoginActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(Call<LoginResponse> call, Throwable t) {
-                        Toast.makeText(LoginActivity.this, "Falha de conexão: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(LoginActivity.this, MensagensErro.SEM_CONEXAO, Toast.LENGTH_LONG).show();
                     }
                 });
             }

@@ -20,6 +20,8 @@ public class ImageLoader {
     public static void carregar(Context context, String fotoShow, ImageView imageView) {
 
         if (fotoShow == null || fotoShow.isEmpty()) {
+            // Cancela um carregamento anterior, para a foto antiga não reaparecer por cima do placeholder
+            Glide.with(context).clear(imageView);
             imageView.setImageResource(R.drawable.ic_photo_placeholder);
             return;
         }

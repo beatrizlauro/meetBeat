@@ -34,3 +34,8 @@ build/
 
 ### Credenciais locais (nunca versionar) ###
 src/main/resources/application-secrets.properties
+
+### Seed de dados fictícios ###
+# Backups do banco (contêm e-mails e hashes de senha) e imagens geradas pelo script
+seed/backups/
+uploads/seed/

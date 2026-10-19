@@ -2,7 +2,6 @@ package com.meetbeat.app;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -12,6 +11,7 @@ import com.meetbeat.app.adapter.CurtidaEnviadaAdapter;
 import com.meetbeat.app.model.CurtidaRecebida;
 import com.meetbeat.app.network.ApiService;
 import com.meetbeat.app.network.RetrofitClient;
+import com.meetbeat.app.util.EstadoLista;
 import com.meetbeat.app.util.UserSession;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ public class CurtidasEnviadasActivity extends AppCompatActivity {
 
     private ApiService apiService;
     private long meuId;
-    private TextView textEstado;
+    private EstadoLista estado;
     private RecyclerView recyclerView;
     private final List<CurtidaRecebida> curtidas = new ArrayList<>();
     private CurtidaEnviadaAdapter adapter;
@@ -38,8 +38,8 @@ public class CurtidasEnviadasActivity extends AppCompatActivity {
         apiService = RetrofitClient.getApiService();
         meuId = UserSession.getUsuarioLogado(this);
 
-        textEstado = findViewById(R.id.textEstadoCurtidasEnviadas);
         recyclerView = findViewById(R.id.recyclerCurtidasEnviadas);
+        estado = new EstadoLista(this, recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         adapter = new CurtidaEnviadaAdapter(curtidas, this::abrirDetalhe);
@@ -51,6 +51,7 @@ public class CurtidasEnviadasActivity extends AppCompatActivity {
     }
 
     private void carregarCurtidasEnviadas() {
+        estado.carregando();
         apiService.getCurtidasEnviadas(meuId).enqueue(new Callback<List<CurtidaRecebida>>() {
             @Override
             public void onResponse(Call<List<CurtidaRecebida>> call, Response<List<CurtidaRecebida>> response) {
@@ -60,18 +61,20 @@ public class CurtidasEnviadasActivity extends AppCompatActivity {
                     adapter.notifyDataSetChanged();
 
                     if (curtidas.isEmpty()) {
-                        mostrarEstado("Você ainda não curtiu ninguém");
+                        estado.mostrar(R.drawable.ic_genero_coracao, "Nenhuma curtida pendente",
+                                "Os perfis que você curtir e que ainda não curtiram você de volta aparecem aqui.",
+                                "Ver sugestões", CurtidasEnviadasActivity.this::finish);
                     } else {
-                        esconderEstado();
+                        estado.esconder();
                     }
                 } else {
-                    mostrarEstado("Erro ao carregar curtidas enviadas");
+                    estado.erro(CurtidasEnviadasActivity.this::carregarCurtidasEnviadas);
                 }
             }
 
             @Override
             public void onFailure(Call<List<CurtidaRecebida>> call, Throwable t) {
-                mostrarEstado("Falha de conexão: " + t.getMessage());
+                estado.erro(CurtidasEnviadasActivity.this::carregarCurtidasEnviadas);
             }
         });
     }
@@ -80,18 +83,8 @@ public class CurtidasEnviadasActivity extends AppCompatActivity {
         Intent intent = new Intent(this, MatchDetalheActivity.class);
         intent.putExtra(MatchDetalheActivity.EXTRA_NOME, pessoa.getNome());
         intent.putExtra(MatchDetalheActivity.EXTRA_FOTO, pessoa.getFotoShow());
+        intent.putExtra(MatchDetalheActivity.EXTRA_BIO, pessoa.getBio());
         intent.putStringArrayListExtra(MatchDetalheActivity.EXTRA_GENEROS, new ArrayList<>(pessoa.getGenerosComuns()));
         startActivity(intent);
-    }
-
-    private void mostrarEstado(String mensagem) {
-        textEstado.setText(mensagem);
-        textEstado.setVisibility(android.view.View.VISIBLE);
-        recyclerView.setVisibility(android.view.View.GONE);
-    }
-
-    private void esconderEstado() {
-        textEstado.setVisibility(android.view.View.GONE);
-        recyclerView.setVisibility(android.view.View.VISIBLE);
     }
 }

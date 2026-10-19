@@ -12,6 +12,9 @@ import com.meetbeat.app.model.EsqueciSenhaRequest;
 import com.meetbeat.app.model.RedefinirSenhaRequest;
 import com.meetbeat.app.network.ApiService;
 import com.meetbeat.app.network.RetrofitClient;
+import com.meetbeat.app.util.MensagensErro;
+import com.meetbeat.app.util.MostrarSenha;
+import com.meetbeat.app.util.ValidacaoCampos;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -40,6 +43,8 @@ public class RedefinirSenhaActivity extends AppCompatActivity {
         editCodigo = findViewById(R.id.editCodigoRedefinirSenha);
         editNovaSenha = findViewById(R.id.editNovaSenhaRedefinir);
         editConfirmarSenha = findViewById(R.id.editConfirmarSenhaRedefinir);
+        MostrarSenha.ligar(editNovaSenha, findViewById(R.id.btnMostrarNovaSenhaRedefinir));
+        MostrarSenha.ligar(editConfirmarSenha, findViewById(R.id.btnMostrarConfirmarSenhaRedefinir));
         btnConfirmar = findViewById(R.id.btnConfirmarRedefinicao);
 
         findViewById(R.id.btnVoltarRedefinirSenha).setOnClickListener(v -> finish());
@@ -56,7 +61,7 @@ public class RedefinirSenhaActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
-                Toast.makeText(RedefinirSenhaActivity.this, "Falha de conexão: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(RedefinirSenhaActivity.this, MensagensErro.SEM_CONEXAO, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -71,8 +76,7 @@ public class RedefinirSenhaActivity extends AppCompatActivity {
             return;
         }
 
-        if (novaSenha.length() < 6) {
-            Toast.makeText(this, "A senha deve ter pelo menos 6 caracteres", Toast.LENGTH_SHORT).show();
+        if (ValidacaoCampos.mostrarErro(editNovaSenha, ValidacaoCampos.erroSenha(novaSenha))) {
             return;
         }
 
@@ -104,7 +108,7 @@ public class RedefinirSenhaActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
                 btnConfirmar.setEnabled(true);
-                Toast.makeText(RedefinirSenhaActivity.this, "Falha de conexão: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(RedefinirSenhaActivity.this, MensagensErro.SEM_CONEXAO, Toast.LENGTH_LONG).show();
             }
         });
     }

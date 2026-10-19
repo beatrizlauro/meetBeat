@@ -11,7 +11,9 @@ import com.meetbeat.app.model.AtualizarBio;
 import com.meetbeat.app.model.AtualizarMusicaArtista;
 import com.meetbeat.app.network.ApiService;
 import com.meetbeat.app.network.RetrofitClient;
+import com.meetbeat.app.util.ContadorCaracteres;
 import com.meetbeat.app.util.UserSession;
+import com.meetbeat.app.util.ValidacaoCampos;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -34,6 +36,11 @@ public class OnboardingBioActivity extends AppCompatActivity {
         editBio = findViewById(R.id.editBioOnboarding);
         editMusica = findViewById(R.id.editMusicaFavorita);
         editArtista = findViewById(R.id.editArtistaFavorito);
+        ValidacaoCampos.restringir(editMusica, ValidacaoCampos.Regra.SEM_EMOJI);
+        ValidacaoCampos.restringir(editArtista, ValidacaoCampos.Regra.SEM_EMOJI);
+
+        ContadorCaracteres.ligar(editBio, findViewById(R.id.textContadorBioOnboarding),
+                getResources().getInteger(R.integer.max_caracteres_bio));
 
         findViewById(R.id.btnContinuarBio).setOnClickListener(v -> salvarTudoEContinuar());
         findViewById(R.id.btnPularBio).setOnClickListener(v -> irParaProximaTela());

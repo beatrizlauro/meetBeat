@@ -5,13 +5,18 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:paddingHorizontal="20dp"
-    android:paddingVertical="16dp">
+    android:paddingHorizontal="12dp"
+    android:paddingVertical="8dp">
 
     <ImageView
         android:id="@+id/iconSearch"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        android:contentDescription="Buscar"
         android:src="@drawable/ic_search"
         app:tint="@color/purple_primary" />
 
@@ -27,8 +32,13 @@
 
     <ImageView
         android:id="@+id/iconNotifications"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        android:contentDescription="Notificações"
         android:src="@drawable/ic_notifications"
         app:tint="@color/purple_primary" />
 

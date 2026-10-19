@@ -73,6 +73,27 @@
 
         </LinearLayout>
 
+        <!-- Bio (quando vazia, vira um convite para preencher) -->
+        <TextView
+            android:id="@+id/textPerfilBio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:paddingHorizontal="24dp"
+            android:textColor="@color/text_dark"
+            android:textSize="14sp"
+            android:lineSpacingExtra="2dp" />
+
+        <!-- Gêneros musicais do usuário (até 5, com opção de expandir) -->
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupGenerosPerfil"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:paddingHorizontal="20dp"
+            app:chipSpacingHorizontal="6dp"
+            app:chipSpacingVertical="4dp" />
+
         <!-- Preferência de visibilidade das curtidas -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -108,17 +129,20 @@
 
             </LinearLayout>
 
-            <androidx.appcompat.widget.SwitchCompat
+            <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/switchMostrarCurtidas"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:thumbTint="@color/purple_primary"
-                app:trackTint="@color/purple_light" />
+                app:thumbTint="@color/switch_thumb"
+                app:trackTint="@color/switch_track"
+                app:trackDecorationTint="@color/switch_track_borda" />
 
         </LinearLayout>
 
-        <!-- Contadores (placeholder, zerados) -->
+        <!-- Contadores de amigos, eventos e artistas: escondidos até serem implementados,
+             para não exibir números fixos em zero sem significado -->
         <LinearLayout
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -285,11 +309,15 @@
             android:weightSum="2">
 
             <LinearLayout
+                android:id="@+id/btnCarteiraPerfil"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_margin="6dp"
                 android:layout_marginEnd="10dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
                 android:background="@drawable/bg_stat_placeholder"
                 android:elevation="3dp"
                 android:padding="12dp"
@@ -312,11 +340,15 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/btnCaronasPerfil"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_margin="6dp"
                 android:layout_marginStart="10dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
                 android:background="@drawable/bg_stat_placeholder"
                 android:elevation="3dp"
                 android:padding="12dp"
@@ -347,6 +379,17 @@
             android:layout_height="wrap_content"
             android:paddingHorizontal="18dp"
             android:nestedScrollingEnabled="false" />
+
+        <TextView
+            android:id="@+id/textDicaExcluirPost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
+            android:text="Toque e segure uma foto para excluí-la"
+            android:textColor="@color/text_terciario"
+            android:textSize="12sp"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/btnAdicionarPost"

@@ -14,6 +14,7 @@ import com.meetbeat.app.model.AdicionarInteresses;
 import com.meetbeat.app.model.Genero;
 import com.meetbeat.app.network.ApiService;
 import com.meetbeat.app.network.RetrofitClient;
+import com.meetbeat.app.util.BuscaGeneroHelper;
 import com.meetbeat.app.util.UserSession;
 
 import java.util.ArrayList;
@@ -41,24 +42,24 @@ public class OnboardingGenerosActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.recyclerGeneros);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
 
-        List<Genero> listaVazia = new ArrayList<>();
-        adapter = new GeneroCardAdapter(listaVazia);
+        adapter = new GeneroCardAdapter(new ArrayList<>());
         recyclerView.setAdapter(adapter);
 
-        carregarGeneros(recyclerView);
+        BuscaGeneroHelper.configurar(this, adapter, recyclerView, findViewById(R.id.textSemResultadoGeneros));
+
+        carregarGeneros();
 
         btnContinuar = findViewById(R.id.btnContinuarGeneros);
         btnContinuar.setOnClickListener(v -> salvarGenerosEContinuar());
         findViewById(R.id.btnVoltarOnboarding).setOnClickListener(v -> finish());
     }
 
-    private void carregarGeneros(RecyclerView recyclerView) {
+    private void carregarGeneros() {
         apiService.getGeneros().enqueue(new Callback<List<Genero>>() {
             @Override
             public void onResponse(Call<List<Genero>> call, Response<List<Genero>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    adapter = new GeneroCardAdapter(response.body());
-                    recyclerView.setAdapter(adapter);
+                    adapter.definirGeneros(response.body());
                 }
             }
 

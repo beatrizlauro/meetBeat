@@ -16,10 +16,16 @@ import java.util.List;
 
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
 
-    private final List<String> posts;
+    public interface OnPostLongClickListener {
+        void onPostLongClick(String urlFoto);
+    }
 
-    public PostAdapter(List<String> posts) {
+    private final List<String> posts;
+    private final OnPostLongClickListener listener;
+
+    public PostAdapter(List<String> posts, OnPostLongClickListener listener) {
         this.posts = posts;
+        this.listener = listener;
     }
 
     @NonNull
@@ -35,6 +41,10 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         String urlFoto = posts.get(position);
         Context context = holder.itemView.getContext();
         ImageLoader.carregar(context, urlFoto, holder.imagePost);
+        holder.imagePost.setOnLongClickListener(v -> {
+            listener.onPostLongClick(urlFoto);
+            return true;
+        });
     }
 
     @Override

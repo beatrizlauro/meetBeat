@@ -47,6 +47,17 @@
                 android:textColor="@color/text_gray"
                 android:textSize="13sp" />
 
+            <TextView
+                android:id="@+id/textCurtidaBio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textColor="@color/text_dark"
+                android:textSize="13sp"
+                android:visibility="gone" />
+
         </LinearLayout>
 
         <ImageView

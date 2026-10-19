@@ -56,6 +56,12 @@
             android:theme="@style/Theme.MeetBeat" />
 
         <activity
+            android:name=".RecorteFotoActivity"
+            android:exported="false"
+            android:label="Ajustar foto"
+            android:theme="@style/Theme.MeetBeat" />
+
+        <activity
             android:name=".EsqueciSenhaActivity"
             android:exported="false"
             android:label="Recuperar Senha"
@@ -107,6 +113,12 @@
             android:name=".EditarPerfilActivity"
             android:exported="false"
             android:label="Editar Perfil"
+            android:theme="@style/Theme.MeetBeat" />
+
+        <activity
+            android:name=".EditarGenerosActivity"
+            android:exported="false"
+            android:label="Gêneros Musicais"
             android:theme="@style/Theme.MeetBeat" />
 
     </application>

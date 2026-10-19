@@ -34,12 +34,21 @@ public class OnboardingFotoActivity extends AppCompatActivity {
     private Uri fotoUriSelecionada;
     private long meuId;
 
-    private final ActivityResultLauncher<String> seletorDeImagem =
-            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-                if (uri != null) {
+    // Depois de escolhida na galeria, a foto passa pela tela de recorte no formato do card do feed
+    private final ActivityResultLauncher<Intent> recortador =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), resultado -> {
+                Uri uri = resultado.getData() != null ? resultado.getData().getData() : null;
+                if (resultado.getResultCode() == RESULT_OK && uri != null) {
                     fotoUriSelecionada = uri;
                     imageFotoSelecionada.setImageURI(uri);
                     findViewById(R.id.textPlaceholderIcone).setVisibility(android.view.View.GONE);
+                }
+            });
+
+    private final ActivityResultLauncher<String> seletorDeImagem =
+            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+                if (uri != null) {
+                    recortador.launch(RecorteFotoActivity.criarIntent(this, uri, RecorteFotoActivity.Formato.FEED));
                 }
             });
 

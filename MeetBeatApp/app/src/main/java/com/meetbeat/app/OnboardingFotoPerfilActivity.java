@@ -37,9 +37,11 @@ public class OnboardingFotoPerfilActivity extends AppCompatActivity {
     private Uri fotoUriSelecionada;
     private long meuId;
 
-    private final ActivityResultLauncher<String> seletorDeImagem =
-            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-                if (uri != null) {
+    // Depois de escolhida na galeria, a foto passa pela tela de recorte antes de virar a prévia
+    private final ActivityResultLauncher<Intent> recortador =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), resultado -> {
+                Uri uri = resultado.getData() != null ? resultado.getData().getData() : null;
+                if (resultado.getResultCode() == RESULT_OK && uri != null) {
                     fotoUriSelecionada = uri;
                     Glide.with(this)
                             .load(uri)
@@ -47,6 +49,13 @@ public class OnboardingFotoPerfilActivity extends AppCompatActivity {
                             .transform(new CircleCrop())
                             .into(imageFoto);
                     findViewById(R.id.textPlaceholderIconePerfil).setVisibility(android.view.View.GONE);
+                }
+            });
+
+    private final ActivityResultLauncher<String> seletorDeImagem =
+            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+                if (uri != null) {
+                    recortador.launch(RecorteFotoActivity.criarIntent(this, uri, RecorteFotoActivity.Formato.PERFIL));
                 }
             });
 

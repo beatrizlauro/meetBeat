@@ -67,7 +67,8 @@
         android:padding="12dp"
         android:layout_marginTop="4dp"
         android:hint="seu@email.com"
-        android:inputType="textEmailAddress" />
+        android:inputType="textEmailAddress"
+        android:maxLength="254" />
 
     <TextView
         android:id="@+id/btnEnviarCodigo"

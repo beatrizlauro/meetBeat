@@ -8,6 +8,7 @@ public class MatchConfirmado {
     private String nome;
     private String fotoShow;
     private List<String> generosComuns;
+    private String bio;
 
     public long getId() {
         return id;
@@ -23,5 +24,9 @@ public class MatchConfirmado {
 
     public List<String> getGenerosComuns() {
         return generosComuns;
+    }
+
+    public String getBio() {
+        return bio;
     }
 }

@@ -71,7 +71,17 @@
                 android:hint="Fale sobre seus artistas favoritos, shows que já foi, o que procura por aqui..."
                 android:gravity="top"
                 android:minLines="4"
-                android:inputType="textMultiLine" />
+                android:maxLength="@integer/max_caracteres_bio"
+                android:inputType="textMultiLine|textCapSentences" />
+
+            <TextView
+                android:id="@+id/textContadorBioOnboarding"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/text_gray"
+                android:textSize="12sp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -91,7 +101,8 @@
                 android:textColorHint="@color/text_gray"
                 android:padding="12dp"
                 android:layout_marginTop="4dp"
-                android:hint="Ex: Standing Next to You" />
+                android:hint="Ex: Standing Next to You"
+                android:maxLength="120" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -112,7 +123,8 @@
                 android:padding="12dp"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="16dp"
-                android:hint="Ex: BTS" />
+                android:hint="Ex: BTS"
+                android:maxLength="120" />
 
         </LinearLayout>
 

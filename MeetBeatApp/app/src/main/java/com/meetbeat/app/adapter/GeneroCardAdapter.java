@@ -13,22 +13,68 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.meetbeat.app.R;
 import com.meetbeat.app.model.Genero;
+import com.meetbeat.app.util.IconeGenero;
 
+import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 public class GeneroCardAdapter extends RecyclerView.Adapter<GeneroCardAdapter.ViewHolder> {
 
-    private final List<Genero> generos;
+    // "todos" guarda a lista completa vinda da API; "generos" é o que está visível
+    // na tela depois de aplicado o termo de busca.
+    private final List<Genero> todos = new ArrayList<>();
+    private final List<Genero> generos = new ArrayList<>();
     private final Set<Long> selecionados = new HashSet<>();
+    private String termoBusca = "";
 
     public GeneroCardAdapter(List<Genero> generos) {
-        this.generos = generos;
+        definirGeneros(generos);
+    }
+
+    public void definirGeneros(List<Genero> lista) {
+        todos.clear();
+        todos.addAll(lista);
+        aplicarFiltro();
+    }
+
+    // A seleção fica guardada por id, então continua valendo mesmo para os gêneros
+    // que a busca escondeu no momento.
+    public void filtrar(String termo) {
+        termoBusca = normalizar(termo);
+        aplicarFiltro();
+    }
+
+    private void aplicarFiltro() {
+        generos.clear();
+        for (Genero genero : todos) {
+            if (termoBusca.isEmpty() || normalizar(genero.getNome()).contains(termoBusca)) {
+                generos.add(genero);
+            }
+        }
+        notifyDataSetChanged();
+    }
+
+    // Ignora maiúsculas e acentos, para que "forro" encontre "Forró" e "eletronica"
+    // encontre "Eletrônica".
+    private static String normalizar(String texto) {
+        if (texto == null) return "";
+        String semAcento = Normalizer.normalize(texto, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
+        return semAcento.toLowerCase(Locale.ROOT).trim();
     }
 
     public Set<Long> getSelecionados() {
         return selecionados;
+    }
+
+    public void definirSelecionados(Set<Long> ids) {
+        selecionados.clear();
+        selecionados.addAll(ids);
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -44,7 +90,7 @@ public class GeneroCardAdapter extends RecyclerView.Adapter<GeneroCardAdapter.Vi
         Genero genero = generos.get(position);
 
         holder.textNome.setText(genero.getNome());
-        holder.imageIcone.setImageResource(escolherIcone(genero.getNome()));
+        holder.imageIcone.setImageResource(IconeGenero.para(genero.getNome()));
 
         boolean selecionado = selecionados.contains(genero.getId());
         holder.card.setBackgroundResource(selecionado ? R.drawable.bg_card_genero_selecionado : R.drawable.bg_card_genero);
@@ -63,18 +109,8 @@ public class GeneroCardAdapter extends RecyclerView.Adapter<GeneroCardAdapter.Vi
             } else {
                 selecionados.add(genero.getId());
             }
-            notifyItemChanged(position);
+            notifyItemChanged(holder.getBindingAdapterPosition());
         });
-    }
-
-    private int escolherIcone(String nomeGenero) {
-        String nome = nomeGenero.toLowerCase();
-        if (nome.contains("bts") || nome.contains("k-pop")) return R.drawable.ic_mic;
-        if (nome.contains("blackpink") || nome.contains("blink")) return R.drawable.ic_heart;
-        if (nome.contains("hip-hop")) return R.drawable.ic_headphones;
-        if (nome.contains("pop")) return R.drawable.ic_music_note;
-        if (nome.contains("r&b")) return R.drawable.ic_headphones;
-        return R.drawable.ic_music_note;
     }
 
     @Override

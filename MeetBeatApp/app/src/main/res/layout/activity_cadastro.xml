@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/purple_light">
@@ -63,7 +64,8 @@
             android:textColorHint="@color/text_gray"
             android:padding="12dp"
             android:layout_marginTop="4dp"
-            android:hint="Seu nome" />
+            android:hint="Seu nome"
+            android:maxLength="80" />
 
         <!-- E-mail -->
         <TextView
@@ -85,7 +87,8 @@
             android:padding="12dp"
             android:layout_marginTop="4dp"
             android:hint="seu@email.com"
-            android:inputType="textEmailAddress" />
+            android:inputType="textEmailAddress"
+            android:maxLength="254" />
 
         <!-- Username -->
         <TextView
@@ -106,7 +109,9 @@
             android:textColorHint="@color/text_gray"
             android:padding="12dp"
             android:layout_marginTop="4dp"
-            android:hint="Ex: jungkook (sem espaços)" />
+            android:hint="Ex: jungkook (sem espaços)"
+            android:maxLength="30"
+            android:inputType="textVisiblePassword|textNoSuggestions" />
 
         <!-- Senha -->
         <TextView
@@ -117,18 +122,43 @@
             android:textColor="@color/text_gray"
             android:textSize="14sp" />
 
-        <EditText
-            android:id="@+id/editSenhaCadastro"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_input_field"
-            android:elevation="2dp"
-            android:textColor="@color/text_dark"
-            android:textColorHint="@color/text_gray"
-            android:padding="12dp"
-            android:layout_marginTop="4dp"
-            android:hint="Crie uma senha"
-            android:inputType="textPassword" />
+            android:layout_marginTop="4dp">
+
+            <EditText
+                android:id="@+id/editSenhaCadastro"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_input_field"
+                android:elevation="2dp"
+                android:textColor="@color/text_dark"
+                android:textColorHint="@color/text_gray"
+                android:hint="Crie uma senha"
+                android:inputType="textPassword"
+                android:maxLength="72"
+                android:paddingStart="12dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:paddingEnd="48dp" />
+
+            <ImageView
+                android:id="@+id/btnMostrarSenhaCadastro"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="4dp"
+                android:padding="11dp"
+                android:elevation="3dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Mostrar senha"
+                android:src="@drawable/ic_olho"
+                app:tint="@color/text_gray" />
+
+        </FrameLayout>
 
         <!-- Botão salvar -->
         <TextView

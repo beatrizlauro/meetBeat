@@ -1,7 +1,6 @@
 package com.meetbeat.app;
 
 import android.os.Bundle;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -11,6 +10,7 @@ import com.meetbeat.app.adapter.MatchConfirmadoAdapter;
 import com.meetbeat.app.model.MatchConfirmado;
 import com.meetbeat.app.network.ApiService;
 import com.meetbeat.app.network.RetrofitClient;
+import com.meetbeat.app.util.EstadoLista;
 import com.meetbeat.app.util.UserSession;
 
 import java.util.ArrayList;
@@ -22,38 +22,58 @@ import retrofit2.Response;
 
 public class MatchesActivity extends AppCompatActivity {
 
+    private ApiService apiService;
+    private long meuId;
+    private final List<MatchConfirmado> matches = new ArrayList<>();
+    private MatchConfirmadoAdapter adapter;
+    private EstadoLista estado;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_matches);
 
-        long meuId = UserSession.getUsuarioLogado(this);
+        apiService = RetrofitClient.getApiService();
+        meuId = UserSession.getUsuarioLogado(this);
 
         RecyclerView recyclerView = findViewById(R.id.recyclerMatches);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        List<MatchConfirmado> matches = new ArrayList<>();
-        MatchConfirmadoAdapter adapter = new MatchConfirmadoAdapter(matches);
+        adapter = new MatchConfirmadoAdapter(matches);
         recyclerView.setAdapter(adapter);
+        estado = new EstadoLista(this, recyclerView);
 
         findViewById(R.id.btnVoltar).setOnClickListener(v -> finish());
 
-        ApiService apiService = RetrofitClient.getApiService();
+        carregarMatches();
+    }
+
+    private void carregarMatches() {
+        estado.carregando();
         apiService.getMatches(meuId).enqueue(new Callback<List<MatchConfirmado>>() {
             @Override
             public void onResponse(Call<List<MatchConfirmado>> call, Response<List<MatchConfirmado>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    matches.clear();
-                    matches.addAll(response.body());
-                    adapter.notifyDataSetChanged();
+                if (!response.isSuccessful() || response.body() == null) {
+                    estado.erro(MatchesActivity.this::carregarMatches);
+                    return;
+                }
+                matches.clear();
+                matches.addAll(response.body());
+                adapter.notifyDataSetChanged();
+
+                if (matches.isEmpty()) {
+                    // Esta tela é aberta a partir do feed, então "Ver sugestões" só precisa fechá-la
+                    estado.mostrar(R.drawable.ic_genero_coracao, "Você ainda não tem matches",
+                            "Quando você e outra pessoa se curtirem, o match aparece aqui. "
+                                    + "Continue curtindo perfis no feed!",
+                            "Ver sugestões", MatchesActivity.this::finish);
                 } else {
-                    Toast.makeText(MatchesActivity.this, "Erro ao carregar matches", Toast.LENGTH_SHORT).show();
+                    estado.esconder();
                 }
             }
 
             @Override
             public void onFailure(Call<List<MatchConfirmado>> call, Throwable t) {
-                Toast.makeText(MatchesActivity.this, "Falha de conexão: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                estado.erro(MatchesActivity.this::carregarMatches);
             }
         });
     }

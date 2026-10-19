@@ -168,4 +168,14 @@ public class UserNode {
     public void setCodigoRecuperacaoExpiracao(Long codigoRecuperacaoExpiracao) {
         this.codigoRecuperacaoExpiracao = codigoRecuperacaoExpiracao;
     }
+
+    private Integer tentativasCodigoRecuperacao;
+
+    public Integer getTentativasCodigoRecuperacao() {
+        return tentativasCodigoRecuperacao;
+    }
+
+    public void setTentativasCodigoRecuperacao(Integer tentativasCodigoRecuperacao) {
+        this.tentativasCodigoRecuperacao = tentativasCodigoRecuperacao;
+    }
 }

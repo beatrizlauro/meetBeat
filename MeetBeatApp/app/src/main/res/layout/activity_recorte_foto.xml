@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tela de recorte: fundo sempre escuro (nos dois temas), como em editores de foto -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#0D0C11">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="12dp">
+
+        <TextView
+            android:id="@+id/btnCancelarRecorte"
+            android:layout_width="88dp"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:text="Cancelar"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/textTituloRecorte"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="88dp"
+            android:layout_height="1dp" />
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/areaRecorte"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <com.meetbeat.app.view.RecorteImageView
+            android:id="@+id/imageRecorte"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.meetbeat.app.view.MolduraRecorteView
+            android:id="@+id/molduraRecorte"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <ProgressBar
+            android:id="@+id/progressRecorte"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/textDicaRecorte"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="16dp"
+        android:gravity="center"
+        android:textColor="#B3FFFFFF"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/btnUsarFoto"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_margin="20dp"
+        android:background="@drawable/bg_button_accept"
+        android:elevation="4dp"
+        android:gravity="center"
+        android:text="Usar foto"
+        android:textColor="@color/vidro_conteudo_claro"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:clickable="true"
+        android:focusable="true" />
+
+</LinearLayout>

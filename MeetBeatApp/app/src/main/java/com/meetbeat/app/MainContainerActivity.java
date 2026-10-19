@@ -8,10 +8,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+
 import com.meetbeat.app.adapter.MainPagerAdapter;
 import com.meetbeat.app.model.UsuarioCompleto;
 import com.meetbeat.app.network.ApiService;
 import com.meetbeat.app.network.RetrofitClient;
+import com.meetbeat.app.util.AvisoDesenvolvimento;
 import com.meetbeat.app.util.ImageLoader;
 import com.meetbeat.app.util.UserSession;
 
@@ -63,6 +66,10 @@ public class MainContainerActivity extends AppCompatActivity {
             int index = i;
             navItems[i].setOnClickListener(v -> viewPager.setCurrentItem(index, true));
         }
+
+        // Cabeçalho compartilhado por todas as abas
+        findViewById(R.id.iconSearch).setOnClickListener(v -> AvisoDesenvolvimento.mostrar(this, "A busca"));
+        findViewById(R.id.iconNotifications).setOnClickListener(v -> abrirNotificacoes());
 
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
@@ -152,5 +159,12 @@ public class MainContainerActivity extends AppCompatActivity {
             int cor = (i == indexAtivo) ? corAtivo : corInativo;
             icones[i].setColorFilter(cor);
         }
+    }
+
+    // Por enquanto não há notificações no sistema, então o painel mostra sempre o estado vazio
+    private void abrirNotificacoes() {
+        BottomSheetDialog painel = new BottomSheetDialog(this);
+        painel.setContentView(R.layout.sheet_notificacoes);
+        painel.show();
     }
 }

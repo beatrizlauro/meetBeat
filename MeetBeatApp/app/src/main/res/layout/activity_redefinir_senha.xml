@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/purple_light">
@@ -83,18 +84,43 @@
             android:textColor="@color/text_gray"
             android:textSize="14sp" />
 
-        <EditText
-            android:id="@+id/editNovaSenhaRedefinir"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_input_field"
-            android:elevation="2dp"
-            android:textColor="@color/text_dark"
-            android:textColorHint="@color/text_gray"
-            android:padding="12dp"
-            android:layout_marginTop="4dp"
-            android:hint="Crie uma nova senha"
-            android:inputType="textPassword" />
+            android:layout_marginTop="4dp">
+
+            <EditText
+                android:id="@+id/editNovaSenhaRedefinir"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_input_field"
+                android:elevation="2dp"
+                android:textColor="@color/text_dark"
+                android:textColorHint="@color/text_gray"
+                android:hint="Crie uma nova senha"
+                android:inputType="textPassword"
+                android:maxLength="72"
+                android:paddingStart="12dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:paddingEnd="48dp" />
+
+            <ImageView
+                android:id="@+id/btnMostrarNovaSenhaRedefinir"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="4dp"
+                android:padding="11dp"
+                android:elevation="3dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Mostrar senha"
+                android:src="@drawable/ic_olho"
+                app:tint="@color/text_gray" />
+
+        </FrameLayout>
 
         <TextView
             android:layout_width="wrap_content"
@@ -104,18 +130,43 @@
             android:textColor="@color/text_gray"
             android:textSize="14sp" />
 
-        <EditText
-            android:id="@+id/editConfirmarSenhaRedefinir"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_input_field"
-            android:elevation="2dp"
-            android:textColor="@color/text_dark"
-            android:textColorHint="@color/text_gray"
-            android:padding="12dp"
-            android:layout_marginTop="4dp"
-            android:hint="Repita a nova senha"
-            android:inputType="textPassword" />
+            android:layout_marginTop="4dp">
+
+            <EditText
+                android:id="@+id/editConfirmarSenhaRedefinir"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_input_field"
+                android:elevation="2dp"
+                android:textColor="@color/text_dark"
+                android:textColorHint="@color/text_gray"
+                android:hint="Repita a nova senha"
+                android:inputType="textPassword"
+                android:maxLength="72"
+                android:paddingStart="12dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:paddingEnd="48dp" />
+
+            <ImageView
+                android:id="@+id/btnMostrarConfirmarSenhaRedefinir"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="4dp"
+                android:padding="11dp"
+                android:elevation="3dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Mostrar senha"
+                android:src="@drawable/ic_olho"
+                app:tint="@color/text_gray" />
+
+        </FrameLayout>
 
         <TextView
             android:id="@+id/btnReenviarCodigo"

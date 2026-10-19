@@ -6,7 +6,7 @@ Este repositório contempla a implementação do módulo de **matching social po
 
 ## Sobre o projeto
 
-O Meet & Beat é uma plataforma voltada a amantes de música e eventos, que integra conexão social, caronas colaborativas e revenda segura de ingressos. Este módulo específico implementa e demonstra a viabilidade técnica do sistema de matching, utilizando um banco de dados orientado a grafos para modelar as relações de afinidade entre usuários e seus interesses musicais.
+O Meet & Beat é uma plataforma voltada a amantes de música e eventos, que integra conexão social, caronas colaborativas, descoberta de eventos e revenda segura de ingressos. Este módulo específico implementa e demonstra a viabilidade técnica do sistema de matching, utilizando um banco de dados orientado a grafos para modelar as relações de afinidade entre usuários e seus interesses musicais.
 
 ## Arquitetura
 
@@ -138,6 +138,8 @@ No Neo4j Browser (acessível pelo botão **Connect > Query** no Neo4j Desktop), 
 | GET    | `/usuarios/{id}/curtidas-enviadas`     | Lista quem o usuário curtiu e ainda não deu match              |
 | GET    | `/usuarios/generos`                    | Lista todos os gêneros/fandoms disponíveis                    |
 | POST   | `/usuarios/{id}/interesses`            | Associa uma lista de gêneros de interesse a um usuário         |
+| GET    | `/usuarios/{id}/interesses`            | Lista os gêneros de interesse atuais do usuário                |
+| PUT    | `/usuarios/{id}/interesses`            | Substitui os gêneros de interesse do usuário (mínimo de um)    |
 | POST   | `/usuarios/{id}/foto`                  | Recebe upload de arquivo de imagem e associa ao usuário        |
 
 Arquivos enviados via upload ficam acessíveis publicamente em `/uploads/{nome-do-arquivo}`.
@@ -305,11 +307,14 @@ app/src/main/java/com/meetbeat/app/
 
 1. Na tela de Login, a pessoa toca em "Esqueci minha senha" e informa o e-mail cadastrado na conta
 2. `POST /usuarios/esqueci-senha` procura um usuário com esse e-mail; se encontrar, gera um código numérico de 6 dígitos, guarda o **hash** desse código (via `PasswordEncoder`, o mesmo usado nas senhas) com validade de 15 minutos, e envia o código por e-mail via SMTP
-3. Para não revelar quais e-mails estão cadastrados na base (OWASP API3:2019 — Excessive Data Exposure), a resposta é sempre a mesma independente de o e-mail existir ou não
+3. Para não revelar quais e-mails estão cadastrados na base, a resposta é sempre a mesma independente de o e-mail existir ou não (OWASP Forgot Password Cheat Sheet)
 4. A pessoa informa o código recebido e a nova senha; `POST /usuarios/redefinir-senha` confere o hash do código e o prazo de validade antes de trocar a senha
 5. Um código só é válido uma vez: ao ser usado com sucesso, é apagado do banco
+6. Após 5 tentativas com código errado, o código é invalidado e é preciso pedir um novo, para impedir que ele seja descoberto por tentativa e erro (OWASP API2:2019)
 
-**Configuração necessária:** o envio de e-mail depende de credenciais SMTP em `application.properties` (`spring.mail.username`/`spring.mail.password`, vazios por padrão). Com Gmail, use uma "senha de app" (Conta Google → Segurança → Senhas de app), não a senha normal da conta.
+## Configuração de segredos
+
+Senha do Neo4j, chave de assinatura do JWT e credenciais de e-mail **não** ficam no `application.properties` (que é versionado). Elas ficam em `src/main/resources/application-secrets.properties`, ignorado pelo Git e importado automaticamente pelo Spring Boot. Para rodar o backend numa máquina nova, copie `application-secrets.properties.example` para `application-secrets.properties` e preencha os valores. Com Gmail, o envio de e-mail exige uma "senha de app" (Conta Google → Segurança → Senhas de app), não a senha normal da conta.
 
 ## Justificativa técnica: por que Neo4j?
 

@@ -52,6 +52,26 @@
         android:padding="20dp">
 
         <TextView
+            android:id="@+id/textTituloBioDetalhe"
+            android:text="Sobre"
+            android:textColor="@color/text_gray"
+            android:textSize="14sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/textBioDetalhe"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="20dp"
+            android:textColor="@color/text_dark"
+            android:textSize="15sp"
+            android:lineSpacingExtra="2dp"
+            android:visibility="gone" />
+
+        <TextView
             android:text="Estilos musicais em comum"
             android:textColor="@color/text_gray"
             android:textSize="14sp"

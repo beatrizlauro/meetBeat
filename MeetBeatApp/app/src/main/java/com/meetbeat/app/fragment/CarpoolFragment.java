@@ -19,7 +19,10 @@ public class CarpoolFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_placeholder, container, false);
         TextView titulo = view.findViewById(R.id.textTituloPlaceholder);
-        titulo.setText("Caronas Colaborativas");
+        titulo.setText("Caronas");
+
+        TextView descricao = view.findViewById(R.id.textDescricaoPlaceholder);
+        descricao.setText("Em breve: ofereça ou encontre caronas para shows, com avaliações entre motoristas e passageiros");
         return view;
     }
 }

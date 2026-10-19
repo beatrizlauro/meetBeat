@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.meetbeat.app.R;
 import com.meetbeat.app.model.CurtidaRecebida;
 import com.meetbeat.app.util.ImageLoader;
+import com.meetbeat.app.util.VisualHelper;
 
 import java.util.List;
 
@@ -44,6 +45,7 @@ public class CurtidaAdapter extends RecyclerView.Adapter<CurtidaAdapter.ViewHold
 
         holder.textNome.setText(pessoa.getNome());
         holder.textGeneros.setText(String.join(", ", pessoa.getGenerosComuns()));
+        VisualHelper.mostrarSeHouverTexto(holder.textBio, pessoa.getBio());
 
         Context context = holder.itemView.getContext();
         ImageLoader.carregar(context, pessoa.getFotoShow(), holder.imageFoto);
@@ -57,13 +59,14 @@ public class CurtidaAdapter extends RecyclerView.Adapter<CurtidaAdapter.ViewHold
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView textNome, textGeneros;
+        TextView textNome, textGeneros, textBio;
         ImageView imageFoto, btnCurtirDeVolta;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             textNome = itemView.findViewById(R.id.textCurtidaNome);
             textGeneros = itemView.findViewById(R.id.textCurtidaGeneros);
+            textBio = itemView.findViewById(R.id.textCurtidaBio);
             imageFoto = itemView.findViewById(R.id.imageCurtidaFoto);
             btnCurtirDeVolta = itemView.findViewById(R.id.btnCurtirDeVolta);
         }

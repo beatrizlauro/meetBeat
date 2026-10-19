@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/purple_light">
@@ -81,6 +82,69 @@
             android:clickable="true"
             android:focusable="true" />
 
+        <!-- Foto do feed (a que aparece no card de sugestões para os outros usuários) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Foto do feed"
+            android:textColor="@color/text_gray"
+            android:textSize="14sp" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp">
+
+            <ImageView
+                android:id="@+id/imageFotoFeedEditar"
+                android:layout_width="match_parent"
+                android:layout_height="180dp"
+                android:scaleType="centerCrop"
+                android:contentDescription="Foto exibida no feed"
+                android:clickable="true"
+                android:focusable="true" />
+
+        </androidx.cardview.widget.CardView>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btnTrocarFotoFeed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Trocar foto do feed"
+                android:textColor="@color/purple_primary"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:padding="8dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <TextView
+                android:id="@+id/btnRemoverFotoFeed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Remover"
+                android:textColor="@color/cor_erro"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:padding="8dp"
+                android:visibility="gone"
+                android:clickable="true"
+                android:focusable="true" />
+
+        </LinearLayout>
+
         <!-- Nome -->
         <TextView
             android:layout_width="wrap_content"
@@ -100,7 +164,8 @@
             android:textColorHint="@color/text_gray"
             android:padding="12dp"
             android:layout_marginTop="4dp"
-            android:hint="Seu nome" />
+            android:hint="Seu nome"
+            android:maxLength="80" />
 
         <!-- Username -->
         <TextView
@@ -121,7 +186,9 @@
             android:textColorHint="@color/text_gray"
             android:padding="12dp"
             android:layout_marginTop="4dp"
-            android:hint="Ex: jungkook" />
+            android:hint="Ex: jungkook"
+            android:maxLength="30"
+            android:inputType="textVisiblePassword|textNoSuggestions" />
 
         <!-- E-mail -->
         <TextView
@@ -143,7 +210,8 @@
             android:padding="12dp"
             android:layout_marginTop="4dp"
             android:hint="seu@email.com (usado para recuperar a senha)"
-            android:inputType="textEmailAddress" />
+            android:inputType="textEmailAddress"
+            android:maxLength="254" />
 
         <!-- Bio -->
         <TextView
@@ -167,7 +235,17 @@
             android:hint="Fale sobre seus artistas favoritos, shows que já foi..."
             android:gravity="top"
             android:minLines="3"
-            android:inputType="textMultiLine" />
+            android:maxLength="@integer/max_caracteres_bio"
+            android:inputType="textMultiLine|textCapSentences" />
+
+        <TextView
+            android:id="@+id/textContadorBioEditar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/text_gray"
+            android:textSize="12sp" />
 
         <!-- Música favorita -->
         <TextView
@@ -188,7 +266,8 @@
             android:textColorHint="@color/text_gray"
             android:padding="12dp"
             android:layout_marginTop="4dp"
-            android:hint="Ex: Standing Next to You" />
+            android:hint="Ex: Standing Next to You"
+            android:maxLength="120" />
 
         <!-- Artista favorito -->
         <TextView
@@ -209,7 +288,8 @@
             android:textColorHint="@color/text_gray"
             android:padding="12dp"
             android:layout_marginTop="4dp"
-            android:hint="Ex: BTS" />
+            android:hint="Ex: BTS"
+            android:maxLength="120" />
 
         <!-- Nova senha -->
         <TextView
@@ -220,18 +300,43 @@
             android:textColor="@color/text_gray"
             android:textSize="14sp" />
 
-        <EditText
-            android:id="@+id/editNovaSenhaEditar"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_input_field"
-            android:elevation="2dp"
-            android:textColor="@color/text_dark"
-            android:textColorHint="@color/text_gray"
-            android:padding="12dp"
-            android:layout_marginTop="4dp"
-            android:hint="Deixe em branco para manter a atual"
-            android:inputType="textPassword" />
+            android:layout_marginTop="4dp">
+
+            <EditText
+                android:id="@+id/editNovaSenhaEditar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_input_field"
+                android:elevation="2dp"
+                android:textColor="@color/text_dark"
+                android:textColorHint="@color/text_gray"
+                android:hint="Deixe em branco para manter a atual"
+                android:inputType="textPassword"
+                android:maxLength="72"
+                android:paddingStart="12dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:paddingEnd="48dp" />
+
+            <ImageView
+                android:id="@+id/btnMostrarNovaSenhaEditar"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="4dp"
+                android:padding="11dp"
+                android:elevation="3dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Mostrar senha"
+                android:src="@drawable/ic_olho"
+                app:tint="@color/text_gray" />
+
+        </FrameLayout>
 
         <TextView
             android:id="@+id/btnSalvarEdicaoPerfil"

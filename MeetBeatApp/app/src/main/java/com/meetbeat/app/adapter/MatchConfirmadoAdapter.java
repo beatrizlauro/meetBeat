@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.meetbeat.app.MatchDetalheActivity;
 import com.meetbeat.app.R;
 import com.meetbeat.app.model.MatchConfirmado;
+import com.meetbeat.app.util.AvisoDesenvolvimento;
 import com.meetbeat.app.util.ImageLoader;
 
 import java.util.ArrayList;
@@ -53,13 +53,14 @@ public class MatchConfirmadoAdapter extends RecyclerView.Adapter<MatchConfirmado
             Intent intent = new Intent(context, MatchDetalheActivity.class);
             intent.putExtra(MatchDetalheActivity.EXTRA_NOME, pessoa.getNome());
             intent.putExtra(MatchDetalheActivity.EXTRA_FOTO, pessoa.getFotoShow());
+            intent.putExtra(MatchDetalheActivity.EXTRA_BIO, pessoa.getBio());
             intent.putStringArrayListExtra(MatchDetalheActivity.EXTRA_GENEROS, new ArrayList<>(pessoa.getGenerosComuns()));
             context.startActivity(intent);
         });
 
-        // Clique no botão de mensagem: mantém o Toast simulando
+        // Clique no botão de mensagem: a troca de mensagens ainda não foi implementada
         holder.btnMensagem.setOnClickListener(v -> {
-            Toast.makeText(context, "Função de mensagens em desenvolvimento", Toast.LENGTH_SHORT).show();
+            AvisoDesenvolvimento.mostrar(context, "A troca de mensagens");
         });
     }
 

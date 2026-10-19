@@ -10,12 +10,15 @@ import androidx.credentials.CredentialManagerCallback;
 import androidx.credentials.CustomCredential;
 import androidx.credentials.GetCredentialRequest;
 import androidx.credentials.GetCredentialResponse;
+import androidx.credentials.exceptions.GetCredentialCancellationException;
 import androidx.credentials.exceptions.GetCredentialException;
 
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 
 public class GoogleAuthHelper {
+
+    private static final String ERRO_GOOGLE = "Não foi possível entrar com o Google. Tente novamente.";
 
     // Web Client ID criado no Google Cloud Console (OAuth consent screen).
     // Deve ser o MESMO valor configurado em application.properties (google.oauth.web-client-id) no backend.
@@ -53,16 +56,18 @@ public class GoogleAuthHelper {
                                         GoogleIdTokenCredential.createFrom(customCredential.getData());
                                 listener.onSuccess(googleIdTokenCredential.getIdToken());
                             } catch (Exception e) {
-                                listener.onError("Falha ao ler a credencial do Google: " + e.getMessage());
+                                listener.onError(ERRO_GOOGLE);
                             }
                         } else {
-                            listener.onError("Tipo de credencial inesperado");
+                            listener.onError(ERRO_GOOGLE);
                         }
                     }
 
                     @Override
                     public void onError(GetCredentialException e) {
-                        listener.onError("Falha ao autenticar com o Google: " + e.getMessage());
+                        // Fechar a janela de contas do Google é uma escolha da pessoa, não um erro
+                        if (e instanceof GetCredentialCancellationException) return;
+                        listener.onError(ERRO_GOOGLE);
                     }
                 }
         );

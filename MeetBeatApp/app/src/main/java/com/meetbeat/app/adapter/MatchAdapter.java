@@ -13,8 +13,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.meetbeat.app.R;
 import com.meetbeat.app.model.MatchSuggestion;
-import com.meetbeat.app.util.VisualHelper;
 import com.meetbeat.app.util.ImageLoader;
+import com.meetbeat.app.util.VisualHelper;
 
 import java.util.List;
 
@@ -46,6 +46,11 @@ public class MatchAdapter extends RecyclerView.Adapter<MatchAdapter.MatchViewHol
         MatchSuggestion pessoa = lista.get(position);
 
         holder.textNome.setText(pessoa.getNome());
+        VisualHelper.mostrarSeHouverTexto(holder.textBio, pessoa.getBio());
+        // Toque na bio alterna entre o resumo (3 linhas) e o texto completo
+        holder.textBio.setMaxLines(3);
+        holder.textBio.setOnClickListener(v ->
+                holder.textBio.setMaxLines(holder.textBio.getMaxLines() == 3 ? Integer.MAX_VALUE : 3));
 
         String generos = String.join(", ", pessoa.getGenerosComuns());
         holder.textScore.setText(generos);
@@ -68,12 +73,13 @@ public class MatchAdapter extends RecyclerView.Adapter<MatchAdapter.MatchViewHol
     }
 
     static class MatchViewHolder extends RecyclerView.ViewHolder {
-        TextView textNome, textScore, btnCurtir, btnRejeitar, textAvatarInicial;
+        TextView textNome, textScore, btnCurtir, btnRejeitar, textAvatarInicial, textBio;
         ImageView imageCardBackground;
 
         MatchViewHolder(@NonNull View itemView) {
             super(itemView);
             textNome = itemView.findViewById(R.id.textNome);
+            textBio = itemView.findViewById(R.id.textBioCard);
             textScore = itemView.findViewById(R.id.textScore);
             btnCurtir = itemView.findViewById(R.id.btnCurtir);
             btnRejeitar = itemView.findViewById(R.id.btnRejeitar);
