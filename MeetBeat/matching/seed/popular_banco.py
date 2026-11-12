@@ -22,6 +22,7 @@ o que permite reproduzir os números citados no TCC.
 import base64
 import json
 import math
+import os
 import random
 import shutil
 import sys
@@ -242,14 +243,26 @@ def ler_propriedade(arquivo, chave):
 
 class Neo4jHttp:
     def __init__(self):
-        uri = ler_propriedade(ARQUIVO_PROPRIEDADES, "spring.neo4j.uri") or "neo4j://127.0.0.1:7687"
-        host = uri.split("://", 1)[1].split(":", 1)[0]
-        usuario = ler_propriedade(ARQUIVO_PROPRIEDADES, "spring.neo4j.authentication.username") or "neo4j"
-        senha = ler_propriedade(ARQUIVO_SEGREDOS, "spring.neo4j.authentication.password")
+        # Para popular o banco da nuvem (Neo4j Aura), defina NEO4J_URI, NEO4J_USERNAME e NEO4J_PASSWORD
+        # no terminal antes de rodar; sem elas, vale a configuração local da API.
+        uri = (os.environ.get("NEO4J_URI")
+               or ler_propriedade(ARQUIVO_PROPRIEDADES, "spring.neo4j.uri") or "neo4j://127.0.0.1:7687")
+        esquema, resto = uri.split("://", 1)
+        host = resto.split(":", 1)[0].split("/", 1)[0]
+        usuario = (os.environ.get("NEO4J_USERNAME")
+                   or ler_propriedade(ARQUIVO_PROPRIEDADES, "spring.neo4j.authentication.username") or "neo4j")
+        senha = (os.environ.get("NEO4J_PASSWORD")
+                 or ler_propriedade(ARQUIVO_SEGREDOS, "spring.neo4j.authentication.password"))
         if not senha:
             sys.exit(f"Senha do Neo4j não encontrada em {ARQUIVO_SEGREDOS}")
-        self.base = f"http://{host}:7474/db/neo4j"
-        self.usar_query_api = False  # muda para a Query API se o endpoint HTTP antigo não existir
+        banco = os.environ.get("NEO4J_DATABASE", "neo4j")
+        if esquema.endswith("+s") or esquema.endswith("+ssc"):
+            self.base = f"https://{host}/db/{banco}"  # Aura: HTTPS na porta padrão
+        else:
+            self.base = f"http://{host}:7474/db/{banco}"
+        print(f"Conectando ao Neo4j em {self.base}")
+        # Muda para a Query API se o endpoint HTTP antigo não existir. A Aura só aceita a Query API.
+        self.usar_query_api = self.base.startswith("https://")
         token = base64.b64encode(f"{usuario}:{senha}".encode()).decode()
         self.cabecalhos = {"Content-Type": "application/json", "Accept": "application/json",
                            "Authorization": f"Basic {token}"}

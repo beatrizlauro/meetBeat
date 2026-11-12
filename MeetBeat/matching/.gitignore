@@ -36,6 +36,10 @@ build/
 src/main/resources/application-secrets.properties
 
 ### Seed de dados fictícios ###
-# Backups do banco (contêm e-mails e hashes de senha) e imagens geradas pelo script
+# Backups do banco (contêm e-mails e hashes de senha). As imagens fictícias de uploads/seed/
+# são versionadas porque a imagem Docker da nuvem precisa delas.
 seed/backups/
-uploads/seed/
+
+### Fotos enviadas pelos usuários em testes locais ###
+uploads/*
+!uploads/seed/

@@ -2,6 +2,7 @@ package com.meetbeat.app.network;
 
 import java.util.concurrent.TimeUnit;
 
+import com.meetbeat.app.BuildConfig;
 import com.meetbeat.app.MeetBeatApplication;
 import com.meetbeat.app.util.UserSession;
 
@@ -16,9 +17,11 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public class RetrofitClient {
 
-    // Celular físico via cabo USB: rode "adb reverse tcp:8080 tcp:8080" e use 127.0.0.1.
-    // Emulador Android Studio: troque para "http://10.0.2.2:8080/" (não funciona em device físico).
-    public static final String BASE_URL = "http://127.0.0.1:8080/";
+    // Definida por tipo de build em app/build.gradle.kts:
+    //  - debug: http://127.0.0.1:8080/ (celular no cabo USB com "adb reverse tcp:8080 tcp:8080")
+    //  - nuvem: URL da API publicada (propriedade meetbeat.cloudUrl em gradle.properties)
+    // Emulador Android Studio: troque a URL do debug para "http://10.0.2.2:8080/".
+    public static final String BASE_URL = BuildConfig.API_URL;
 
     private static Retrofit retrofit;
 

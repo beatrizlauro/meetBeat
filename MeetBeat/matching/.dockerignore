@@ -1,0 +1,8 @@
+target
+seed
+.mvn
+mvnw
+mvnw.cmd
+src/main/resources/application-secrets.properties
+uploads/*
+!uploads/seed

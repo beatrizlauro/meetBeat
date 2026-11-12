@@ -14,9 +14,20 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Debug (Android Studio, cabo USB com "adb reverse tcp:8080 tcp:8080"): API rodando no próprio PC.
+        buildConfigField("String", "API_URL", "\"http://127.0.0.1:8080/\"")
     }
 
     buildTypes {
+        // APK para instalar no celular e usar sem o PC: aponta para a API publicada na nuvem.
+        // Herda a assinatura de debug, então o login com Google continua valendo (mesmo SHA-1).
+        create("nuvem") {
+            initWith(getByName("debug"))
+            val cloudUrl = project.findProperty("meetbeat.cloudUrl") as String? ?: "https://meetbeat-api.onrender.com/"
+            buildConfigField("String", "API_URL", "\"$cloudUrl\"")
+            matchingFallbacks += listOf("debug")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -28,6 +39,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
